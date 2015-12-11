@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/qor/qor"
-	"github.com/qor/qor/exchange"
+	"github.com/qor/exchange"
 	"github.com/qor/qor/resource"
 )
 

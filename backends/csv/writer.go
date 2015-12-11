@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/qor/qor"
-	"github.com/qor/qor/exchange"
+	"github.com/qor/exchange"
 	"github.com/qor/qor/resource"
 	"github.com/qor/qor/roles"
 )

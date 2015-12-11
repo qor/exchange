@@ -10,8 +10,8 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"github.com/qor/qor"
-	"github.com/qor/qor/exchange"
-	csv_adaptor "github.com/qor/qor/exchange/backends/csv"
+	"github.com/qor/exchange"
+	csv_adaptor "github.com/qor/exchange/backends/csv"
 	"github.com/qor/qor/resource"
 	"github.com/qor/qor/test/utils"
 )

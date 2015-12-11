@@ -7,8 +7,8 @@ QOR exchange provides conversion (import/export) functionality for any Qor.Resou
 
 ```go
 import (
-  "github.com/qor/qor/exchange"
-  "github.com/qor/qor/exchange/backends/csv"
+  "github.com/qor/exchange"
+  "github.com/qor/exchange/backends/csv"
 )
 
 // Define resource
