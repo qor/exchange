@@ -4,9 +4,10 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
+	"path/filepath"
 
-	"github.com/qor/qor"
 	"github.com/qor/exchange"
+	"github.com/qor/qor"
 	"github.com/qor/qor/resource"
 	"github.com/qor/qor/roles"
 )
@@ -22,7 +23,12 @@ func (c *CSV) NewWriter(res *exchange.Resource, context *qor.Context) (exchange.
 	}
 	writer.metas = metas
 
+	dir := filepath.Dir(c.Filename)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err = os.MkdirAll(dir, os.ModePerm)
+	}
 	csvfile, err := os.OpenFile(c.Filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+
 	if err == nil {
 		writer.Writer = csv.NewWriter(csvfile)
 	}
