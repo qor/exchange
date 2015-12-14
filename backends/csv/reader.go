@@ -5,8 +5,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/qor/qor"
 	"github.com/qor/exchange"
+	"github.com/qor/qor"
 	"github.com/qor/qor/resource"
 )
 
@@ -46,6 +46,10 @@ func (rows Rows) Header() (results []string) {
 		}
 	}
 	return
+}
+
+func (rows *Rows) Total() uint {
+	return uint(rows.total)
 }
 
 func (rows *Rows) Next() bool {

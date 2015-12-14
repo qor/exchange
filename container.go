@@ -15,6 +15,7 @@ type Rows interface {
 	Header() []string
 	ReadRow() (*resource.MetaValues, error)
 	Next() bool
+	Total() uint
 }
 
 type Writer interface {

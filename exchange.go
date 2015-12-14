@@ -68,7 +68,7 @@ func (res *Resource) GetMetas([]string) []resource.Metaor {
 	return metas
 }
 
-func (res *Resource) Import(container Container, context *qor.Context) error {
+func (res *Resource) Import(container Container, context *qor.Context, callbacks ...func(Progress) error) error {
 	rows, err := container.NewReader(res, context)
 	if err == nil {
 		for rows.Next() {
