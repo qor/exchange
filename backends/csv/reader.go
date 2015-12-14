@@ -22,7 +22,6 @@ func (c *CSV) NewReader(res *exchange.Resource, context *qor.Context) (exchange.
 		rows.total = len(rows.records) - 1
 		if res.Config.WithoutHeader {
 			rows.total++
-			rows.current = -1
 		}
 	}
 
@@ -54,7 +53,7 @@ func (rows *Rows) Total() uint {
 }
 
 func (rows *Rows) Next() bool {
-	if rows.total > rows.current+1 {
+	if rows.total >= rows.current+1 {
 		rows.current += 1
 		return true
 	}
