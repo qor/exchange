@@ -8,18 +8,3 @@ type Progress struct {
 		Error error
 	}
 }
-
-func (progress Progress) GetCurrent() uint {
-	return progress.Current
-}
-
-func (progress Progress) GetTotal() uint {
-	return progress.Total
-}
-
-func (progress Progress) GetCells() []struct {
-	Value interface{}
-	Error error
-} {
-	return progress.Cells
-}
