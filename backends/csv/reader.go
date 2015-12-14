@@ -19,8 +19,9 @@ func (c *CSV) NewReader(res *exchange.Resource, context *qor.Context) (exchange.
 		reader := csv.NewReader(csvfile)
 		reader.TrimLeadingSpace = true
 		rows.records, err = reader.ReadAll()
-		rows.total = len(rows.records)
+		rows.total = len(rows.records) - 1
 		if res.Config.WithoutHeader {
+			rows.total++
 			rows.current = -1
 		}
 	}

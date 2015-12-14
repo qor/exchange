@@ -71,15 +71,27 @@ func (res *Resource) GetMetas([]string) []resource.Metaor {
 func (res *Resource) Import(container Container, context *qor.Context, callbacks ...func(Progress) error) error {
 	rows, err := container.NewReader(res, context)
 	if err == nil {
+		var current uint
+		var total = rows.Total()
 		for rows.Next() {
+			current++
+			progress := Progress{Total: total, Current: current}
+
 			var metaValues *resource.MetaValues
 			if metaValues, err = rows.ReadRow(); err == nil {
 				result := res.NewStruct()
 				res.FindOneHandler(result, metaValues, context)
+
 				if err = resource.DecodeToResource(res, result, metaValues, context).Start(); err == nil {
 					if err = res.CallSave(result, context); err != nil {
 						return err
 					}
+				}
+			}
+
+			for _, callback := range callbacks {
+				if err := callback(progress); err != nil {
+					return err
 				}
 			}
 		}

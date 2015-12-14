@@ -14,7 +14,7 @@ func (progress Progress) GetCurrent() uint {
 }
 
 func (progress Progress) GetTotal() uint {
-	return progress.Current
+	return progress.Total
 }
 
 func (progress Progress) GetCells() []struct {
