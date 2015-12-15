@@ -168,9 +168,11 @@ func (res *Resource) Export(container Container, context *qor.Context, callbacks
 
 		if writer, err := container.NewWriter(res, context); err == nil {
 			writer.WriteHeader()
+
 			for i := 0; i < reflectValue.Len(); i++ {
 				var result = reflectValue.Index(i).Interface()
-				if err := writer.WriteRow(result); err != nil {
+				var metaValues *resource.MetaValues
+				if metaValues, err = writer.WriteRow(result); err != nil {
 					return err
 				}
 
@@ -178,6 +180,13 @@ func (res *Resource) Export(container Container, context *qor.Context, callbacks
 					Current: uint(i + 1),
 					Total:   total,
 					Value:   result,
+				}
+
+				for _, metaValue := range metaValues.Values {
+					progress.Cells = append(progress.Cells, Cell{
+						Header: metaValue.Name,
+						Value:  metaValue.Value,
+					})
 				}
 
 				for _, callback := range callbacks {

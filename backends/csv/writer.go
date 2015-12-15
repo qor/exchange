@@ -55,13 +55,22 @@ func (writer *Writer) WriteHeader() error {
 	return nil
 }
 
-func (writer *Writer) WriteRow(record interface{}) error {
+func (writer *Writer) WriteRow(record interface{}) (*resource.MetaValues, error) {
+	var metaValues resource.MetaValues
 	var results []string
+
 	for _, meta := range writer.metas {
-		results = append(results, fmt.Sprint(meta.GetFormattedValuer()(record, writer.context)))
+		value := meta.GetFormattedValuer()(record, writer.context)
+		metaValue := resource.MetaValue{
+			Name:  meta.GetName(),
+			Value: value,
+		}
+
+		metaValues.Values = append(metaValues.Values, &metaValue)
+		results = append(results, fmt.Sprint(value))
 	}
-	writer.Writer.Write(results)
-	return nil
+
+	return &metaValues, writer.Writer.Write(results)
 }
 
 func (writer *Writer) Flush() {
