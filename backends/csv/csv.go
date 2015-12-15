@@ -8,6 +8,3 @@ type CSV struct {
 	Filename string
 	records  [][]string
 }
-
-func (csv *CSV) WriteLog(string) {
-}

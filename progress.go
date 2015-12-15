@@ -1,13 +1,19 @@
 package exchange
 
-type Progress struct {
+type ImportProgress struct {
 	Current uint
 	Total   uint
-	Cells   []Cell
+	Cells   []ImportProgressCell
 }
 
-type Cell struct {
+type ImportProgressCell struct {
 	Header string
 	Value  interface{}
 	Error  error
+}
+
+type ExportProgress struct {
+	Current uint
+	Total   uint
+	Value   interface{}
 }

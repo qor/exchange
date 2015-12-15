@@ -73,7 +73,7 @@ type errorsInterface interface {
 	GetErrors() []error
 }
 
-func (res *Resource) Import(container Container, context *qor.Context, callbacks ...func(Progress) error) error {
+func (res *Resource) Import(container Container, context *qor.Context, callbacks ...func(ImportProgress) error) error {
 	rows, err := container.NewReader(res, context)
 	if err == nil {
 		var hasError bool
@@ -94,14 +94,14 @@ func (res *Resource) Import(container Container, context *qor.Context, callbacks
 
 		for rows.Next() {
 			current++
-			progress := Progress{Total: total, Current: current}
+			progress := ImportProgress{Total: total, Current: current}
 
 			var metaValues *resource.MetaValues
 			var handleError func(err error)
 
 			if metaValues, err = rows.ReadRow(); err == nil {
 				for _, metaValue := range metaValues.Values {
-					progress.Cells = append(progress.Cells, Cell{
+					progress.Cells = append(progress.Cells, ImportProgressCell{
 						Header: metaValue.Name,
 						Value:  metaValue.Value,
 					})
@@ -157,17 +157,31 @@ func (res *Resource) Import(container Container, context *qor.Context, callbacks
 	return err
 }
 
-func (res *Resource) Export(container Container, context *qor.Context) error {
+func (res *Resource) Export(container Container, context *qor.Context, callbacks ...func(ExportProgress) error) error {
 	results := res.NewSlice()
 
-	if err := context.GetDB().Find(results).Error; err == nil {
+	var total uint
+	if err := context.GetDB().Find(results).Count(&total).Error; err == nil {
 		reflectValue := reflect.Indirect(reflect.ValueOf(results))
+
 		if writer, err := container.NewWriter(res, context); err == nil {
 			writer.WriteHeader()
 			for i := 0; i < reflectValue.Len(); i++ {
 				var result = reflectValue.Index(i).Interface()
 				if err := writer.WriteRow(result); err != nil {
 					return err
+				}
+
+				var progress = ExportProgress{
+					Current: uint(i + 1),
+					Total:   total,
+					Value:   result,
+				}
+
+				for _, callback := range callbacks {
+					if err := callback(progress); err != nil {
+						return err
+					}
 				}
 			}
 			writer.Flush()

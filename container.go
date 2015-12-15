@@ -8,7 +8,6 @@ import (
 type Container interface {
 	NewReader(*Resource, *qor.Context) (Rows, error)
 	NewWriter(*Resource, *qor.Context) (Writer, error)
-	WriteLog(string)
 }
 
 type Rows interface {
