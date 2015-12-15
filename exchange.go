@@ -73,7 +73,7 @@ type errorsInterface interface {
 	GetErrors() []error
 }
 
-func (res *Resource) Import(container Container, context *qor.Context, callbacks ...func(ImportProgress) error) error {
+func (res *Resource) Import(container Container, context *qor.Context, callbacks ...func(Progress) error) error {
 	rows, err := container.NewReader(res, context)
 	if err == nil {
 		var hasError bool
@@ -94,14 +94,14 @@ func (res *Resource) Import(container Container, context *qor.Context, callbacks
 
 		for rows.Next() {
 			current++
-			progress := ImportProgress{Total: total, Current: current}
+			progress := Progress{Total: total, Current: current}
 
 			var metaValues *resource.MetaValues
 			var handleError func(err error)
 
 			if metaValues, err = rows.ReadRow(); err == nil {
 				for _, metaValue := range metaValues.Values {
-					progress.Cells = append(progress.Cells, ImportProgressCell{
+					progress.Cells = append(progress.Cells, Cell{
 						Header: metaValue.Name,
 						Value:  metaValue.Value,
 					})
@@ -136,6 +136,8 @@ func (res *Resource) Import(container Container, context *qor.Context, callbacks
 				}
 
 				result := res.NewStruct()
+				progress.Value = result
+
 				res.FindOneHandler(result, metaValues, context)
 
 				if err = resource.DecodeToResource(res, result, metaValues, context).Start(); err == nil {
@@ -157,7 +159,7 @@ func (res *Resource) Import(container Container, context *qor.Context, callbacks
 	return err
 }
 
-func (res *Resource) Export(container Container, context *qor.Context, callbacks ...func(ExportProgress) error) error {
+func (res *Resource) Export(container Container, context *qor.Context, callbacks ...func(Progress) error) error {
 	results := res.NewSlice()
 
 	var total uint
@@ -172,7 +174,7 @@ func (res *Resource) Export(container Container, context *qor.Context, callbacks
 					return err
 				}
 
-				var progress = ExportProgress{
+				var progress = Progress{
 					Current: uint(i + 1),
 					Total:   total,
 					Value:   result,
