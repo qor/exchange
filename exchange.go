@@ -76,8 +76,21 @@ type errorsInterface interface {
 func (res *Resource) Import(container Container, context *qor.Context, callbacks ...func(Progress) error) error {
 	rows, err := container.NewReader(res, context)
 	if err == nil {
+		var hasError bool
 		var current uint
 		var total = rows.Total()
+
+		if db := context.GetDB(); db != nil {
+			tx := db.Begin()
+			context.SetDB(tx)
+			defer func() {
+				if hasError {
+					tx.Rollback()
+				} else {
+					tx.Commit()
+				}
+			}()
+		}
 
 		for rows.Next() {
 			current++
@@ -95,11 +108,13 @@ func (res *Resource) Import(container Container, context *qor.Context, callbacks
 				}
 
 				handleError = func(err error) {
+					hasError = true
+
 					if errors, ok := err.(errorsInterface); ok {
 						for _, err := range errors.GetErrors() {
 							handleError(err)
 						}
-					} else if err, ok := err.(validations.Error); ok {
+					} else if err, ok := err.(*validations.Error); ok {
 						for idx, cell := range progress.Cells {
 							if cell.Header == err.Column {
 								cell.Error = err
