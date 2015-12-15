@@ -8,6 +8,7 @@ import (
 	"github.com/qor/qor"
 	"github.com/qor/qor/resource"
 	"github.com/qor/qor/roles"
+	"github.com/qor/qor/validations"
 )
 
 type Resource struct {
@@ -68,24 +69,66 @@ func (res *Resource) GetMetas([]string) []resource.Metaor {
 	return metas
 }
 
+type errorsInterface interface {
+	GetErrors() []error
+}
+
 func (res *Resource) Import(container Container, context *qor.Context, callbacks ...func(Progress) error) error {
 	rows, err := container.NewReader(res, context)
 	if err == nil {
 		var current uint
 		var total = rows.Total()
+
 		for rows.Next() {
 			current++
 			progress := Progress{Total: total, Current: current}
 
 			var metaValues *resource.MetaValues
+			var handleError func(err error)
+
 			if metaValues, err = rows.ReadRow(); err == nil {
+				for _, metaValue := range metaValues.Values {
+					progress.Cells = append(progress.Cells, Cell{
+						Header: metaValue.Name,
+						Value:  metaValue.Value,
+					})
+				}
+
+				handleError = func(err error) {
+					if errors, ok := err.(errorsInterface); ok {
+						for _, err := range errors.GetErrors() {
+							handleError(err)
+						}
+					} else if err, ok := err.(validations.Error); ok {
+						for idx, cell := range progress.Cells {
+							if cell.Header == err.Column {
+								cell.Error = err
+								progress.Cells[idx] = cell
+								break
+							}
+						}
+					} else if len(progress.Cells) > 0 {
+						var err error = err
+						cell := progress.Cells[0]
+						if cell.Error != nil {
+							var errors qor.Errors
+							errors.AddError(cell.Error)
+							errors.AddError(err)
+							err = errors
+						}
+						cell.Error = err
+					}
+				}
+
 				result := res.NewStruct()
 				res.FindOneHandler(result, metaValues, context)
 
 				if err = resource.DecodeToResource(res, result, metaValues, context).Start(); err == nil {
 					if err = res.CallSave(result, context); err != nil {
-						return err
+						handleError(err)
 					}
+				} else {
+					handleError(err)
 				}
 			}
 
