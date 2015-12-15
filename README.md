@@ -62,3 +62,17 @@ product.AddProcessor(func(result interface{}, metaValues *resource.MetaValues, c
   return nil
 })
 ```
+
+* Callbacks
+
+```go
+// Importing callbacks
+product.Import(csv.New("products.csv"), context, func(progress exchange.Progress) error {
+    fmt.Printf("%v/%v Importing product %v\n", progress.Current, progress.Total, progress.Value.(*Product).Code))
+})
+
+// Exporting callbacks
+product.Export(csv.New("products.csv"), context, func(progress exchange.Progress) error {
+    fmt.Printf("%v/%v Exporting product %v\n", progress.Current, progress.Total, progress.Value.(*Product).Code))
+})
+```
