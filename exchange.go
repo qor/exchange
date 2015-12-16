@@ -45,11 +45,11 @@ func NewResource(value interface{}, config ...Config) *Resource {
 	return &res
 }
 
-func (res *Resource) Meta(meta Meta) *Meta {
+func (res *Resource) Meta(meta *Meta) *Meta {
 	meta.base = res
 	meta.updateMeta()
-	res.metas = append(res.metas, &meta)
-	return &meta
+	res.metas = append(res.metas, meta)
+	return meta
 }
 
 func (res *Resource) GetMeta(name string) *Meta {
