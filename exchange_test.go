@@ -9,9 +9,9 @@ import (
 	"testing"
 
 	"github.com/jinzhu/gorm"
-	"github.com/qor/qor"
 	"github.com/qor/exchange"
 	csv_adaptor "github.com/qor/exchange/backends/csv"
+	"github.com/qor/qor"
 	"github.com/qor/qor/resource"
 	"github.com/qor/qor/test/utils"
 )
@@ -26,9 +26,9 @@ func init() {
 	db.AutoMigrate(&Product{})
 
 	product = exchange.NewResource(&Product{}, exchange.Config{PrimaryField: "Code"})
-	product.Meta(exchange.Meta{Name: "Code"})
-	product.Meta(exchange.Meta{Name: "Name"})
-	product.Meta(exchange.Meta{Name: "Price"})
+	product.Meta(&exchange.Meta{Name: "Code"})
+	product.Meta(&exchange.Meta{Name: "Name"})
+	product.Meta(&exchange.Meta{Name: "Price"})
 }
 
 func newContext() *qor.Context {
@@ -79,9 +79,9 @@ func TestExportCSV(t *testing.T) {
 
 func TestImportWithInvalidData(t *testing.T) {
 	product = exchange.NewResource(&Product{}, exchange.Config{PrimaryField: "Code"})
-	product.Meta(exchange.Meta{Name: "Code"})
-	product.Meta(exchange.Meta{Name: "Name"})
-	product.Meta(exchange.Meta{Name: "Price"})
+	product.Meta(&exchange.Meta{Name: "Code"})
+	product.Meta(&exchange.Meta{Name: "Name"})
+	product.Meta(&exchange.Meta{Name: "Price"})
 
 	product.AddValidator(func(result interface{}, metaValues *resource.MetaValues, context *qor.Context) error {
 		if f, err := strconv.ParseFloat(fmt.Sprint(metaValues.Get("Price").Value), 64); err == nil {
@@ -105,9 +105,9 @@ func TestImportWithInvalidData(t *testing.T) {
 
 func TestProcessImportedData(t *testing.T) {
 	product = exchange.NewResource(&Product{}, exchange.Config{PrimaryField: "Code"})
-	product.Meta(exchange.Meta{Name: "Code"})
-	product.Meta(exchange.Meta{Name: "Name"})
-	product.Meta(exchange.Meta{Name: "Price"})
+	product.Meta(&exchange.Meta{Name: "Code"})
+	product.Meta(&exchange.Meta{Name: "Name"})
+	product.Meta(&exchange.Meta{Name: "Price"})
 
 	product.AddProcessor(func(result interface{}, metaValues *resource.MetaValues, context *qor.Context) error {
 		product := result.(*Product)
