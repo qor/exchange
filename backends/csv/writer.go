@@ -9,7 +9,7 @@ import (
 	"github.com/qor/exchange"
 	"github.com/qor/qor"
 	"github.com/qor/qor/resource"
-	"github.com/qor/qor/roles"
+	"github.com/qor/roles"
 )
 
 func (c *CSV) NewWriter(res *exchange.Resource, context *qor.Context) (exchange.Writer, error) {

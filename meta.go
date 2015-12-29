@@ -5,7 +5,7 @@ import (
 
 	"github.com/qor/qor"
 	"github.com/qor/qor/resource"
-	"github.com/qor/qor/roles"
+	"github.com/qor/roles"
 )
 
 type Meta struct {
