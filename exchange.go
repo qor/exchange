@@ -8,7 +8,7 @@ import (
 	"github.com/qor/qor"
 	"github.com/qor/qor/resource"
 	"github.com/qor/roles"
-	"github.com/qor/qor/validations"
+	"github.com/qor/validations"
 )
 
 type Resource struct {
