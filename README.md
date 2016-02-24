@@ -1,7 +1,8 @@
 # Exchange
 
-QOR exchange provides conversion (import/export) functionality for any Qor.Resource to CSV file
+Exchange is a golang library, provides import/export functionality between data file and databases.
 
+[![GoDoc](https://godoc.org/github.com/qor/exchange?status.svg)](https://godoc.org/github.com/qor/exchange)
 
 ## Usage
 
@@ -11,20 +12,23 @@ import (
   "github.com/qor/exchange/backends/csv"
 )
 
-// Define resource
-product = exchange.NewResource(&Product{}, exchange.Config{PrimaryField: "Code"})
-product.Meta(&exchange.Meta{Name: "Code"})
-product.Meta(&exchange.Meta{Name: "Name"})
-product.Meta(&exchange.Meta{Name: "Price"})
+func main() {
+  // Define Resource
+  product = exchange.NewResource(&Product{}, exchange.Config{PrimaryField: "Code"})
+  // Define columns are exportable/importable
+  product.Meta(&exchange.Meta{Name: "Code"})
+  product.Meta(&exchange.Meta{Name: "Name"})
+  product.Meta(&exchange.Meta{Name: "Price"})
 
-// Define context environment
-context := &qor.Context{DB: db}
+  // Define context environment
+  context := &qor.Context{DB: db}
 
-// Import products.csv into database
-product.Import(csv.New("products.csv"), context)
+  // Import products.csv into database
+  product.Import(csv.New("products.csv"), context)
 
-// Export products into products.csv
-product.Export(csv.New("products.csv"), context)
+  // Export products into products.csv
+  product.Export(csv.New("products.csv"), context)
+}
 ```
 
 Sample products.csv
@@ -36,7 +40,7 @@ P002, Product P002, 200
 P003, Product P003, 300
 ```
 
-## Advanced Usage
+## Advanced Usages
 
 * Add Validations
 
@@ -53,7 +57,7 @@ product.AddValidator(func(result interface{}, metaValues *resource.MetaValues, c
 })
 ```
 
-* Process data before save
+* Process data Before Import
 
 ```go
 product.AddProcessor(func(result interface{}, metaValues *resource.MetaValues, context *qor.Context) error {
@@ -76,3 +80,7 @@ product.Export(csv.New("products.csv"), context, func(progress exchange.Progress
     fmt.Printf("%v/%v Exporting product %v\n", progress.Current, progress.Total, progress.Value.(*Product).Code))
 })
 ```
+
+## License
+
+Released under the [MIT License](http://opensource.org/licenses/MIT).

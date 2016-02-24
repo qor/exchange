@@ -95,11 +95,11 @@ func TestImportWithInvalidData(t *testing.T) {
 	})
 
 	if err := product.Import(csv_adaptor.New("fixtures/products.csv"), newContext()); err != nil {
-		t.Errorf("Failed to import product, get error", err)
+		t.Errorf("Failed to import product, get error: %v", err)
 	}
 
 	if err := product.Import(csv_adaptor.New("fixtures/invalid_price_products.csv"), newContext()); err == nil {
-		t.Errorf("should get error when import products with invalid price")
+		t.Error("should get error when import products with invalid price")
 	}
 }
 
@@ -116,7 +116,7 @@ func TestProcessImportedData(t *testing.T) {
 	})
 
 	if err := product.Import(csv_adaptor.New("fixtures/products.csv"), newContext()); err != nil {
-		t.Errorf("Failed to import product, get error", err)
+		t.Errorf("Failed to import product, get error: %v", err)
 	}
 
 	checkProduct(t, "fixtures/products_with_tax.csv")

@@ -11,18 +11,24 @@ import (
 	"github.com/qor/validations"
 )
 
+// Resource defined an exchange resource, which includes importing/exporting fields definitions
 type Resource struct {
 	resource.Resource
 	Config *Config
 	metas  []*Meta
 }
 
+// Config is exchange resource config
 type Config struct {
-	PrimaryField  string
-	Permission    *roles.Permission
+	// PrimaryField that used as primary field when searching resource from database
+	PrimaryField string
+	// Permission defined permission
+	Permission *roles.Permission
+	// WithoutHeader no header in the data file
 	WithoutHeader bool
 }
 
+// NewResource new exchange Resource
 func NewResource(value interface{}, config ...Config) *Resource {
 	res := Resource{Resource: *resource.New(value)}
 	if len(config) > 0 {
@@ -37,14 +43,14 @@ func NewResource(value interface{}, config ...Config) *Resource {
 			scope := context.GetDB().NewScope(res.Value)
 			if field, ok := scope.FieldByName(res.Config.PrimaryField); ok {
 				return context.GetDB().First(result, fmt.Sprintf("%v = ?", scope.Quote(field.DBName)), metaValues.Get(res.Config.PrimaryField).Value).Error
-			} else {
-				return errors.New("failed to find primary field")
 			}
+			return errors.New("failed to find primary field")
 		}
 	}
 	return &res
 }
 
+// Meta define exporting/importing meta for exchange Resource
 func (res *Resource) Meta(meta *Meta) *Meta {
 	meta.base = res
 	meta.updateMeta()
@@ -52,6 +58,7 @@ func (res *Resource) Meta(meta *Meta) *Meta {
 	return meta
 }
 
+// GetMeta get defined Meta from exchange Resource
 func (res *Resource) GetMeta(name string) *Meta {
 	for _, meta := range res.metas {
 		if meta.Name == name {
@@ -61,6 +68,7 @@ func (res *Resource) GetMeta(name string) *Meta {
 	return nil
 }
 
+// GetMetas get all defined Metas from exchange Resource
 func (res *Resource) GetMetas([]string) []resource.Metaor {
 	metas := []resource.Metaor{}
 	for _, meta := range res.metas {
@@ -73,6 +81,8 @@ type errorsInterface interface {
 	GetErrors() []error
 }
 
+// Import used to import data into a exchange Resource
+//     product.Import(csv.New("products.csv"), context)
 func (res *Resource) Import(container Container, context *qor.Context, callbacks ...func(Progress) error) error {
 	rows, err := container.NewReader(res, context)
 	if err == nil {
@@ -159,6 +169,8 @@ func (res *Resource) Import(container Container, context *qor.Context, callbacks
 	return err
 }
 
+// Export used export data from a exchange Resource
+//     product.Export(csv.New("products.csv"), context)
 func (res *Resource) Export(container Container, context *qor.Context, callbacks ...func(Progress) error) error {
 	results := res.NewSlice()
 

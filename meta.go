@@ -8,6 +8,7 @@ import (
 	"github.com/qor/roles"
 )
 
+// Meta defines importable/exportable fields
 type Meta struct {
 	base *Resource
 	resource.Meta
@@ -18,33 +19,14 @@ type Meta struct {
 	Permission *roles.Permission
 }
 
+// GetMetas get defined sub metas
 func (meta *Meta) GetMetas() []resource.Metaor {
 	return []resource.Metaor{}
 }
 
+// GetResource get its resource
 func (meta *Meta) GetResource() resource.Resourcer {
 	return nil
-}
-
-func (meta *Meta) GetFormattedValuer() func(interface{}, *qor.Context) interface{} {
-	return func(record interface{}, context *qor.Context) interface{} {
-		if valuer := meta.Meta.Valuer; valuer != nil {
-			result := valuer(record, context)
-
-			if reflectValue := reflect.ValueOf(result); reflectValue.IsValid() {
-				if reflectValue.Kind() == reflect.Ptr {
-					if reflectValue.IsNil() || !reflectValue.Elem().IsValid() {
-						return nil
-					}
-
-					result = reflectValue.Elem().Interface()
-				}
-
-				return result
-			}
-		}
-		return nil
-	}
 }
 
 func (meta *Meta) updateMeta() {
@@ -71,4 +53,23 @@ func (meta *Meta) updateMeta() {
 			injector.ConfigureQorMeta(meta)
 		}
 	}
+
+	meta.SetFormattedValuer(func(record interface{}, context *qor.Context) interface{} {
+		if valuer := meta.GetValuer(); valuer != nil {
+			result := valuer(record, context)
+
+			if reflectValue := reflect.ValueOf(result); reflectValue.IsValid() {
+				if reflectValue.Kind() == reflect.Ptr {
+					if reflectValue.IsNil() || !reflectValue.Elem().IsValid() {
+						return nil
+					}
+
+					result = reflectValue.Elem().Interface()
+				}
+
+				return result
+			}
+		}
+		return nil
+	})
 }
