@@ -8,6 +8,10 @@ Data can optionally be processed during import.
 
 [![GoDoc](https://godoc.org/github.com/qor/exchange?status.svg)](https://godoc.org/github.com/qor/exchange)
 
+## Documentation
+
+<https://doc.getqor.com/plugins/exchange.html>
+
 ## Usage
 
 ```go
