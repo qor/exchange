@@ -15,8 +15,8 @@ import (
 func (c *CSV) NewWriter(res *exchange.Resource, context *qor.Context) (exchange.Writer, error) {
 	writer := &Writer{CSV: c, Resource: res, context: context}
 
-	var metas []resource.Metaor
-	for _, meta := range res.GetMetas([]string{}) {
+	var metas []*exchange.Meta
+	for _, meta := range res.Metas {
 		if meta.HasPermission(roles.Read, context) {
 			metas = append(metas, meta)
 		}
@@ -41,14 +41,14 @@ type Writer struct {
 	context  *qor.Context
 	Resource *exchange.Resource
 	Writer   *csv.Writer
-	metas    []resource.Metaor
+	metas    []*exchange.Meta
 }
 
 func (writer *Writer) WriteHeader() error {
 	if !writer.Resource.Config.WithoutHeader {
 		var results []string
 		for _, meta := range writer.metas {
-			results = append(results, meta.GetName())
+			results = append(results, meta.Header)
 		}
 		writer.Writer.Write(results)
 	}

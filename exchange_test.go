@@ -22,13 +22,14 @@ var product *exchange.Resource
 func init() {
 	db = utils.TestDB()
 
-	db.DropTable(&Product{})
-	db.AutoMigrate(&Product{})
+	db.DropTable(&Product{}, &Category{})
+	db.AutoMigrate(&Product{}, &Category{})
 
 	product = exchange.NewResource(&Product{}, exchange.Config{PrimaryField: "Code"})
 	product.Meta(&exchange.Meta{Name: "Code"})
 	product.Meta(&exchange.Meta{Name: "Name"})
 	product.Meta(&exchange.Meta{Name: "Price"})
+	product.Meta(&exchange.Meta{Name: "Category.Name", Header: "Category"})
 }
 
 func newContext() *qor.Context {
@@ -49,8 +50,20 @@ func checkProduct(t *testing.T, filename string) {
 		var count int
 		if db.Model(&Product{}).Where("code = ?", param[0]).Count(&count); count != 1 {
 			t.Errorf("Found %v with code %v, but should find one (%v)", count, param[0], filename)
-		} else if db.Model(&Product{}).Where("code = ? AND name = ? AND price = ?", param[0], param[1], param[2]).Count(&count); count != 1 {
+			break
+		}
+
+		if db.Model(&Product{}).Where("code = ? AND name = ? AND price = ?", param[0], param[1], param[2]).Count(&count); count != 1 {
 			t.Errorf("Found %v with params %v, but should find one (%v)", count, param, filename)
+			break
+		}
+
+		var product Product
+		if len(param) == 4 {
+			db.Preload("Category").Where("code = ? AND name = ? AND price = ?", param[0], param[1], param[2]).First(&product)
+			if product.Category.Name != param[3] {
+				t.Errorf("Category %v should not imported, but product's category is %#v (%v)", param[3], product.Category, filename)
+			}
 		}
 	}
 }

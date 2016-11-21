@@ -15,7 +15,7 @@ import (
 type Resource struct {
 	resource.Resource
 	Config *Config
-	metas  []*Meta
+	Metas  []*Meta
 }
 
 // Config is exchange resource config
@@ -52,16 +52,20 @@ func NewResource(value interface{}, config ...Config) *Resource {
 
 // Meta define exporting/importing meta for exchange Resource
 func (res *Resource) Meta(meta *Meta) *Meta {
+	if meta.Header == "" {
+		meta.Header = meta.Name
+	}
+
 	meta.base = res
 	meta.updateMeta()
-	res.metas = append(res.metas, meta)
+	res.Metas = append(res.Metas, meta)
 	return meta
 }
 
 // GetMeta get defined Meta from exchange Resource
 func (res *Resource) GetMeta(name string) *Meta {
-	for _, meta := range res.metas {
-		if meta.Name == name {
+	for _, meta := range res.Metas {
+		if meta.Header == name {
 			return meta
 		}
 	}
@@ -71,7 +75,7 @@ func (res *Resource) GetMeta(name string) *Meta {
 // GetMetas get all defined Metas from exchange Resource
 func (res *Resource) GetMetas([]string) []resource.Metaor {
 	metas := []resource.Metaor{}
-	for _, meta := range res.metas {
+	for _, meta := range res.Metas {
 		metas = append(metas, meta)
 	}
 	return metas
