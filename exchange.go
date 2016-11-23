@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"reflect"
 
+	"encoding/json"
+
+	"github.com/jinzhu/gorm"
 	"github.com/qor/qor"
 	"github.com/qor/qor/resource"
 	"github.com/qor/roles"
@@ -41,13 +44,26 @@ func NewResource(value interface{}, config ...Config) *Resource {
 	if res.Config.PrimaryField != "" {
 		res.FindOneHandler = func(result interface{}, metaValues *resource.MetaValues, context *qor.Context) error {
 			scope := context.GetDB().NewScope(res.Value)
-			if field, ok := scope.FieldByName(res.Config.PrimaryField); ok {
-				return context.GetDB().First(result, fmt.Sprintf("%v = ?", scope.Quote(field.DBName)), metaValues.Get(res.Config.PrimaryField).Value).Error
+			field, ok := scope.FieldByName(res.Config.PrimaryField)
+			if !ok {
+				return errors.New("failed to find primary field")
 			}
-			return errors.New("failed to find primary field")
+			primaryCond := fmt.Sprintf("%v = ?", scope.Quote(field.DBName))
+			primaryMeta := metaValues.Get(res.Config.PrimaryField)
+			if primaryMeta == nil {
+				return fmt.Errorf("primary field \"%s\" not exist in meta values: %s", field.Name, jsonV(metaValues))
+			}
+			primaryValue := metaValues.Get(res.Config.PrimaryField).Value
+			return context.GetDB().First(result, primaryCond, primaryValue).Error
 		}
 	}
 	return &res
+}
+
+func jsonV(v interface{}) (r string) {
+	b, _ := json.MarshalIndent(v, "", "\t")
+	r = string(b)
+	return
 }
 
 // Meta define exporting/importing meta for exchange Resource
@@ -87,90 +103,101 @@ type errorsInterface interface {
 
 // Import used to import data into a exchange Resource
 //     product.Import(csv.New("products.csv"), context)
-func (res *Resource) Import(container Container, context *qor.Context, callbacks ...func(Progress) error) error {
-	rows, err := container.NewReader(res, context)
-	if err == nil {
-		var hasError bool
-		var current uint
-		var total = rows.Total()
+func (res *Resource) Import(container Container, context *qor.Context, callbacks ...func(Progress) error) (err error) {
+	var rows Rows
+	rows, err = container.NewReader(res, context)
+	if err != nil {
+		return err
+	}
 
-		if db := context.GetDB(); db != nil {
-			tx := db.Begin()
-			context.SetDB(tx)
-			defer func() {
-				if hasError {
-					tx.Rollback()
-				} else {
-					tx.Commit()
-				}
-			}()
+	var current uint
+	var total = rows.Total()
+
+	if db := context.GetDB(); db != nil {
+		tx := db.Begin()
+		context.SetDB(tx)
+		defer func() {
+			if err != nil {
+				tx.Rollback()
+			} else {
+				tx.Commit()
+			}
+		}()
+	}
+
+	for rows.Next() {
+		current++
+		progress := Progress{Total: total, Current: current}
+
+		var metaValues *resource.MetaValues
+		metaValues, err = rows.ReadRow()
+		if err != nil {
+			handleError(err, &progress)
+			continue
 		}
 
-		for rows.Next() {
-			current++
-			progress := Progress{Total: total, Current: current}
+		for _, metaValue := range metaValues.Values {
+			progress.Cells = append(progress.Cells, Cell{
+				Header: metaValue.Name,
+				Value:  metaValue.Value,
+			})
+		}
 
-			var metaValues *resource.MetaValues
-			var handleError func(err error)
+		result := res.NewStruct()
+		progress.Value = result
 
-			if metaValues, err = rows.ReadRow(); err == nil {
-				for _, metaValue := range metaValues.Values {
-					progress.Cells = append(progress.Cells, Cell{
-						Header: metaValue.Name,
-						Value:  metaValue.Value,
-					})
-				}
+		err = res.FindOneHandler(result, metaValues, context)
+		if err != nil && err != gorm.ErrRecordNotFound {
+			handleError(err, &progress)
+			continue
+		}
 
-				handleError = func(err error) {
-					hasError = true
+		err = resource.DecodeToResource(res, result, metaValues, context).Start()
+		if err != nil {
+			handleError(err, &progress)
+			continue
+		}
 
-					if errors, ok := err.(errorsInterface); ok {
-						for _, err := range errors.GetErrors() {
-							handleError(err)
-						}
-					} else if err, ok := err.(*validations.Error); ok {
-						for idx, cell := range progress.Cells {
-							if cell.Header == err.Column {
-								cell.Error = err
-								progress.Cells[idx] = cell
-								break
-							}
-						}
-					} else if len(progress.Cells) > 0 {
-						var err error = err
-						cell := progress.Cells[0]
-						if cell.Error != nil {
-							var errors qor.Errors
-							errors.AddError(cell.Error)
-							errors.AddError(err)
-							err = errors
-						}
-						cell.Error = err
-					}
-				}
+		err = res.CallSave(result, context)
+		if err != nil {
+			handleError(err, &progress)
+			continue
+		}
 
-				result := res.NewStruct()
-				progress.Value = result
-
-				res.FindOneHandler(result, metaValues, context)
-
-				if err = resource.DecodeToResource(res, result, metaValues, context).Start(); err == nil {
-					if err = res.CallSave(result, context); err != nil {
-						handleError(err)
-					}
-				} else {
-					handleError(err)
-				}
-			}
-
-			for _, callback := range callbacks {
-				if err := callback(progress); err != nil {
-					return err
-				}
+		for _, callback := range callbacks {
+			if err = callback(progress); err != nil {
+				handleError(err, &progress)
+				continue
 			}
 		}
 	}
 	return err
+}
+
+func handleError(err error, progress *Progress) {
+	if errors, ok := err.(errorsInterface); ok {
+		for _, err := range errors.GetErrors() {
+			handleError(err, progress)
+		}
+	} else if err, ok := err.(*validations.Error); ok {
+		for idx, cell := range progress.Cells {
+			if cell.Header == err.Column {
+				cell.Error = err
+				progress.Cells[idx] = cell
+				break
+			}
+		}
+	} else if len(progress.Cells) > 0 {
+		var err error = err
+		cell := progress.Cells[0]
+		if cell.Error != nil {
+			var errors qor.Errors
+			errors.AddError(cell.Error)
+			errors.AddError(err)
+			err = errors
+		}
+		cell.Error = err
+	}
 }
 
 // Export used export data from a exchange Resource
