@@ -13,5 +13,6 @@ type Product struct {
 
 type Category struct {
 	gorm.Model
+	Code string
 	Name string
 }

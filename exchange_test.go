@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/jinzhu/gorm"
@@ -133,4 +134,14 @@ func TestProcessImportedData(t *testing.T) {
 	}
 
 	checkProduct(t, "fixtures/products_with_tax.csv")
+}
+
+func TestMissingPrimaryFieldColumnInCSVShouldNotNilPointer(t *testing.T) {
+	category := exchange.NewResource(&Category{}, exchange.Config{PrimaryField: "Code"})
+	category.Meta(&exchange.Meta{Name: "Code"})
+	category.Meta(&exchange.Meta{Name: "Name"})
+	err := category.Import(csv_adaptor.New("fixtures/categories.csv"), newContext())
+	if err == nil || strings.Index(err.Error(), "not exist in meta values") < 0 {
+		t.Error(err)
+	}
 }
