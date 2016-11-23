@@ -66,11 +66,14 @@ func (rows Rows) ReadRow() (*resource.MetaValues, error) {
 
 	for index, column := range columns {
 		metaValue := resource.MetaValue{
-			Name:  column,
-			Value: rows.records[rows.current][index],
+			Header: column,
+			Value:  rows.records[rows.current][index],
 		}
-		if meta := rows.Resource.GetMeta(column); meta != nil {
+
+		meta := rows.Resource.GetMeta(column)
+		if meta != nil {
 			metaValue.Meta = meta
+			metaValue.Name = meta.Name
 		}
 		metaValues.Values = append(metaValues.Values, &metaValue)
 	}

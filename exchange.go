@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"reflect"
 
-	"encoding/json"
-
 	"github.com/jinzhu/gorm"
 	"github.com/qor/qor"
 	"github.com/qor/qor/resource"
@@ -51,19 +49,13 @@ func NewResource(value interface{}, config ...Config) *Resource {
 			primaryCond := fmt.Sprintf("%v = ?", scope.Quote(field.DBName))
 			primaryMeta := metaValues.Get(res.Config.PrimaryField)
 			if primaryMeta == nil {
-				return fmt.Errorf("primary field \"%s\" not exist in meta values: %s", field.Name, jsonV(metaValues))
+				return fmt.Errorf("primary field \"%s\" not exist in meta values: %s", field.Name, metaValues)
 			}
 			primaryValue := metaValues.Get(res.Config.PrimaryField).Value
 			return context.GetDB().First(result, primaryCond, primaryValue).Error
 		}
 	}
 	return &res
-}
-
-func jsonV(v interface{}) (r string) {
-	b, _ := json.MarshalIndent(v, "", "\t")
-	r = string(b)
-	return
 }
 
 // Meta define exporting/importing meta for exchange Resource
@@ -79,9 +71,9 @@ func (res *Resource) Meta(meta *Meta) *Meta {
 }
 
 // GetMeta get defined Meta from exchange Resource
-func (res *Resource) GetMeta(name string) *Meta {
+func (res *Resource) GetMeta(header string) *Meta {
 	for _, meta := range res.Metas {
-		if meta.Header == name {
+		if meta.Header == header {
 			return meta
 		}
 	}
