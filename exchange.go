@@ -49,13 +49,26 @@ func NewResource(value interface{}, config ...Config) *Resource {
 			primaryCond := fmt.Sprintf("%v = ?", scope.Quote(field.DBName))
 			primaryMeta := metaValues.Get(res.Config.PrimaryField)
 			if primaryMeta == nil {
-				return fmt.Errorf("primary field \"%s\" not exist in meta values: %s", field.Name, metaValues)
+				return fmt.Errorf("primary field \"%s\" not exist in meta values: %s", field.Name, metaValuesAsString(&res, metaValues))
 			}
 			primaryValue := metaValues.Get(res.Config.PrimaryField).Value
 			return context.GetDB().First(result, primaryCond, primaryValue).Error
 		}
 	}
 	return &res
+}
+
+func metaValuesAsString(res *Resource, metaValues *resource.MetaValues) (r string) {
+	configHeaders := []string{}
+	for _, v := range res.Metas {
+		configHeaders = append(configHeaders, v.Header+" => "+v.Name)
+	}
+	actualHeaders := []string{}
+	for _, v := range metaValues.Values {
+		actualHeaders = append(actualHeaders, v.Name)
+	}
+	r = fmt.Sprintf("\n configured headers: %#+v\n actual headers: %#+v\n", configHeaders, actualHeaders)
+	return
 }
 
 // Meta define exporting/importing meta for exchange Resource

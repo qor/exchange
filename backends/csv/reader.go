@@ -66,8 +66,8 @@ func (rows Rows) ReadRow() (*resource.MetaValues, error) {
 
 	for index, column := range columns {
 		metaValue := resource.MetaValue{
-			Header: column,
-			Value:  rows.records[rows.current][index],
+			Name:  column,
+			Value: rows.records[rows.current][index],
 		}
 
 		meta := rows.Resource.GetMeta(column)
