@@ -43,7 +43,8 @@ func NewResource(value interface{}, config ...Config) *Resource {
 		res.FindOneHandler = func(result interface{}, metaValues *resource.MetaValues, context *qor.Context) error {
 			scope := context.GetDB().NewScope(res.Value)
 			if field, ok := scope.FieldByName(res.Config.PrimaryField); ok {
-				return context.GetDB().First(result, fmt.Sprintf("%v = ?", scope.Quote(field.DBName)), metaValues.Get(res.Config.PrimaryField).Value).Error
+				field.Set(metaValues.Get(res.Config.PrimaryField).Value)
+				return context.GetDB().First(result, fmt.Sprintf("%v = ?", scope.Quote(field.DBName)), field.Field.Interface()).Error
 			}
 			return errors.New("failed to find primary field")
 		}
