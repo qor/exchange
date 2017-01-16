@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/jinzhu/gorm"
 	"github.com/qor/qor"
 	"github.com/qor/qor/resource"
 	"github.com/qor/roles"
@@ -152,10 +153,12 @@ func (res *Resource) Import(container Container, context *qor.Context, callbacks
 				result := res.NewStruct()
 				progress.Value = result
 
-				res.FindOneHandler(result, metaValues, context)
-
-				if err = resource.DecodeToResource(res, result, metaValues, context).Start(); err == nil {
-					if err = res.CallSave(result, context); err != nil {
+				if err = res.FindOneHandler(result, metaValues, context); err == nil || err == gorm.ErrRecordNotFound {
+					if err = resource.DecodeToResource(res, result, metaValues, context).Start(); err == nil {
+						if err = res.CallSave(result, context); err != nil {
+							handleError(err)
+						}
+					} else {
 						handleError(err)
 					}
 				} else {
