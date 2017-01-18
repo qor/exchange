@@ -26,7 +26,7 @@ func init() {
 	db.AutoMigrate(&Product{}, &Category{})
 
 	product = exchange.NewResource(&Product{}, exchange.Config{PrimaryField: "Code"})
-	product.Meta(&exchange.Meta{Name: "Code"})
+	product.Meta(&exchange.Meta{Name: "Code", Header: "代码"})
 	product.Meta(&exchange.Meta{Name: "Name"})
 	product.Meta(&exchange.Meta{Name: "Price"})
 	product.Meta(&exchange.Meta{Name: "Category.Name", Header: "Category"})
@@ -92,7 +92,7 @@ func TestExportCSV(t *testing.T) {
 
 func TestImportWithInvalidData(t *testing.T) {
 	product = exchange.NewResource(&Product{}, exchange.Config{PrimaryField: "Code"})
-	product.Meta(&exchange.Meta{Name: "Code"})
+	product.Meta(&exchange.Meta{Name: "Code", Header: "代码"})
 	product.Meta(&exchange.Meta{Name: "Name"})
 	product.Meta(&exchange.Meta{Name: "Price"})
 
@@ -118,7 +118,7 @@ func TestImportWithInvalidData(t *testing.T) {
 
 func TestProcessImportedData(t *testing.T) {
 	product = exchange.NewResource(&Product{}, exchange.Config{PrimaryField: "Code"})
-	product.Meta(&exchange.Meta{Name: "Code"})
+	product.Meta(&exchange.Meta{Name: "Code", Header: "代码"})
 	product.Meta(&exchange.Meta{Name: "Name"})
 	product.Meta(&exchange.Meta{Name: "Price"})
 

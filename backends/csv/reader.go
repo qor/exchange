@@ -71,6 +71,7 @@ func (rows Rows) ReadRow() (*resource.MetaValues, error) {
 		}
 		if meta := rows.Resource.GetMeta(column); meta != nil {
 			metaValue.Meta = meta
+			metaValue.Name = meta.Name
 		}
 		metaValues.Values = append(metaValues.Values, &metaValue)
 	}
