@@ -26,7 +26,8 @@ type Config struct {
 	// Permission defined permission
 	Permission *roles.Permission
 	// WithoutHeader no header in the data file
-	WithoutHeader bool
+	WithoutHeader      bool
+	DisableTransaction bool
 }
 
 // NewResource new exchange Resource
@@ -98,7 +99,7 @@ func (res *Resource) Import(container Container, context *qor.Context, callbacks
 		var current uint
 		var total = rows.Total()
 
-		if db := context.GetDB(); db != nil {
+		if db := context.GetDB(); db != nil && !res.Config.DisableTransaction {
 			tx := db.Begin()
 			context.SetDB(tx)
 			defer func() {
