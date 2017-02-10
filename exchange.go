@@ -128,6 +128,7 @@ func (res *Resource) Import(container Container, context *qor.Context, callbacks
 
 				handleError = func(err error) {
 					hasError = true
+					progress.Errors.AddError(err)
 
 					if errors, ok := err.(errorsInterface); ok {
 						for _, err := range errors.GetErrors() {

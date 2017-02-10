@@ -1,10 +1,13 @@
 package exchange
 
+import "github.com/qor/qor"
+
 // Progress defined importing/exporting progress
 type Progress struct {
 	Current uint
 	Total   uint
 	Value   interface{}
+	Errors  qor.Errors
 	Cells   []Cell
 }
 
