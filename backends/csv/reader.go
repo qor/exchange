@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/qor/exchange"
 	"github.com/qor/qor"
@@ -18,7 +19,17 @@ func (c *CSV) NewReader(res *exchange.Resource, context *qor.Context) (exchange.
 		defer csvfile.Close()
 		reader := csv.NewReader(csvfile)
 		reader.TrimLeadingSpace = true
+
 		rows.records, err = reader.ReadAll()
+
+		if c.config.TrimSpace {
+			for _, rows := range rows.records {
+				for i, record := range rows {
+					rows[i] = strings.TrimSpace(record)
+				}
+			}
+		}
+
 		rows.total = len(rows.records) - 1
 		if res.Config.WithoutHeader {
 			rows.total++
