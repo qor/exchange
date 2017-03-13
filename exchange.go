@@ -1,6 +1,7 @@
 package exchange
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/jinzhu/gorm"
@@ -39,9 +40,8 @@ func NewResource(value interface{}, config ...Config) *Resource {
 	res.Permission = res.Config.Permission
 
 	if res.Config.PrimaryField != "" {
-		scope := gorm.Scope{Value: res.Value}
-		if field, ok := scope.FieldByName(res.Config.PrimaryField); ok {
-			res.SetPrimaryFields([]*gorm.StructField{field.StructField})
+		if err := res.SetPrimaryFields(res.Config.PrimaryField); err != nil {
+			fmt.Println(err)
 		}
 	}
 	return &res
