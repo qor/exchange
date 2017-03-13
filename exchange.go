@@ -1,8 +1,6 @@
 package exchange
 
 import (
-	"errors"
-	"fmt"
 	"reflect"
 
 	"github.com/jinzhu/gorm"
@@ -14,7 +12,7 @@ import (
 
 // Resource defined an exchange resource, which includes importing/exporting fields definitions
 type Resource struct {
-	resource.Resource
+	*resource.Resource
 	Config *Config
 	Metas  []*Meta
 }
@@ -32,7 +30,7 @@ type Config struct {
 
 // NewResource new exchange Resource
 func NewResource(value interface{}, config ...Config) *Resource {
-	res := Resource{Resource: *resource.New(value)}
+	res := Resource{Resource: resource.New(value)}
 	if len(config) > 0 {
 		res.Config = &config[0]
 	} else {
@@ -41,15 +39,9 @@ func NewResource(value interface{}, config ...Config) *Resource {
 	res.Permission = res.Config.Permission
 
 	if res.Config.PrimaryField != "" {
-		res.FindOneHandler = func(result interface{}, metaValues *resource.MetaValues, context *qor.Context) error {
-			scope := context.GetDB().NewScope(res.Value)
-			if field, ok := scope.FieldByName(res.Config.PrimaryField); ok {
-				if metaValue := metaValues.Get(res.Config.PrimaryField); metaValue != nil {
-					field.Set(metaValue.Value)
-				}
-				return context.GetDB().First(result, fmt.Sprintf("%v = ?", scope.Quote(field.DBName)), field.Field.Interface()).Error
-			}
-			return errors.New("failed to find primary field")
+		scope := gorm.Scope{Value: res.Value}
+		if field, ok := scope.FieldByName(res.Config.PrimaryField); ok {
+			res.SetPrimaryFields([]*gorm.StructField{field.StructField})
 		}
 	}
 	return &res
