@@ -31,12 +31,12 @@ func (meta *Meta) GetResource() resource.Resourcer {
 
 func (meta *Meta) updateMeta() {
 	meta.Meta = resource.Meta{
-		Name:       meta.Name,
-		FieldName:  meta.FieldName,
-		Setter:     meta.Setter,
-		Valuer:     meta.Valuer,
-		Permission: meta.Permission,
-		Resource:   meta.base,
+		Name:         meta.Name,
+		FieldName:    meta.FieldName,
+		Setter:       meta.Setter,
+		Valuer:       meta.Valuer,
+		Permission:   meta.Permission,
+		BaseResource: meta.base,
 	}
 
 	meta.PreInitialize()
