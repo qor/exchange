@@ -61,7 +61,7 @@ func (meta *Meta) updateMeta() {
 			if reflectValue := reflect.ValueOf(result); reflectValue.IsValid() {
 				if reflectValue.Kind() == reflect.Ptr {
 					if reflectValue.IsNil() || !reflectValue.Elem().IsValid() {
-						return nil
+						return ""
 					}
 
 					result = reflectValue.Elem().Interface()
@@ -70,6 +70,6 @@ func (meta *Meta) updateMeta() {
 				return result
 			}
 		}
-		return nil
+		return ""
 	})
 }
