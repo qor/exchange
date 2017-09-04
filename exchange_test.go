@@ -29,6 +29,7 @@ func init() {
 	product.Meta(&exchange.Meta{Name: "Code", Header: "代码"})
 	product.Meta(&exchange.Meta{Name: "Name"})
 	product.Meta(&exchange.Meta{Name: "Price"})
+	product.Meta(&exchange.Meta{Name: "Tag"})
 	product.Meta(&exchange.Meta{Name: "Category.Name", Header: "Category"})
 }
 

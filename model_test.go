@@ -7,6 +7,7 @@ type Product struct {
 	Code       string
 	Name       string
 	Price      float64
+	Tag        *string
 	Category   Category
 	CategoryID *uint
 }
