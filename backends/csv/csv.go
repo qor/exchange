@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 // New initialize CSV backend, config is option, the last one will be used if there are more than one configs
@@ -58,7 +59,12 @@ func (c CSV) getWriter() (io.WriteCloser, error) {
 	if c.writer != nil {
 		return c.writer, nil
 	} else if c.filename != "" {
-		writerCloser, err := os.Open(c.filename)
+		dir := filepath.Dir(c.filename)
+		if _, err := os.Stat(dir); os.IsNotExist(err) {
+			err = os.MkdirAll(dir, os.ModePerm)
+		}
+		writerCloser, err := os.OpenFile(c.filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+
 		return writerCloser, err
 	}
 
