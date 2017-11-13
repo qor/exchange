@@ -6,13 +6,19 @@ import (
 )
 
 // New initialize CSV backend, config is option, the last one will be used if there are more than one configs
-func New(value interface{}, config ...Config) (csv *CSV) {
+func New(value interface{}, config ...Config) *CSV {
+	csv := &CSV{}
+
 	if f, ok := value.(string); ok {
-		csv = &CSV{filename: f}
-	} else if r, ok := value.(io.ReadCloser); ok {
-		csv = &CSV{reader: r}
-	} else if w, ok := value.(io.WriteCloser); ok {
-		csv = &CSV{writer: w}
+		csv.filename = f
+	} else {
+		if r, ok := value.(io.ReadCloser); ok {
+			csv.reader = r
+		}
+
+		if w, ok := value.(io.WriteCloser); ok {
+			csv = &CSV{writer: w}
+		}
 	}
 
 	for _, cfg := range config {
