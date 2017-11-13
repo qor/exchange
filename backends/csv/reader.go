@@ -2,7 +2,6 @@ package csv
 
 import (
 	"encoding/csv"
-	"os"
 	"strconv"
 	"strings"
 
@@ -15,10 +14,10 @@ import (
 func (c *CSV) NewReader(res *exchange.Resource, context *qor.Context) (exchange.Rows, error) {
 	var rows = Rows{CSV: c, Resource: res}
 
-	csvfile, err := os.Open(c.Filename)
+	readCloser, err := c.getReader()
 	if err == nil {
-		defer csvfile.Close()
-		reader := csv.NewReader(csvfile)
+		defer readCloser.Close()
+		reader := csv.NewReader(readCloser)
 		reader.TrimLeadingSpace = true
 
 		rows.records, err = reader.ReadAll()
