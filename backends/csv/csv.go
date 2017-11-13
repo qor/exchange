@@ -9,10 +9,12 @@ func New(filename string, config ...Config) *CSV {
 	return csv
 }
 
+// Config CSV exchange config
 type Config struct {
 	TrimSpace bool
 }
 
+// CSV CSV struct
 type CSV struct {
 	Filename string
 	records  [][]string
