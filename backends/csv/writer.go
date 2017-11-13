@@ -24,11 +24,11 @@ func (c *CSV) NewWriter(res *exchange.Resource, context *qor.Context) (exchange.
 	}
 	writer.metas = metas
 
-	dir := filepath.Dir(c.Filename)
+	dir := filepath.Dir(c.filename)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		err = os.MkdirAll(dir, os.ModePerm)
 	}
-	csvfile, err := os.OpenFile(c.Filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	csvfile, err := os.OpenFile(c.filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 
 	if err == nil {
 		writer.Writer = csv.NewWriter(csvfile)
