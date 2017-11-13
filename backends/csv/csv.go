@@ -1,6 +1,7 @@
 package csv
 
 import (
+	"errors"
 	"io"
 	"os"
 )
@@ -38,11 +39,28 @@ type CSV struct {
 	records [][]string
 
 	filename string
-	reader   io.Reader
+	reader   io.ReadCloser
 	writer   io.WriteCloser
 }
 
 func (c CSV) getReader() (io.ReadCloser, error) {
-	readerCloser, err := os.Open(c.filename)
-	return readerCloser, err
+	if c.reader != nil {
+		return c.reader, nil
+	} else if c.filename != "" {
+		readerCloser, err := os.Open(c.filename)
+		return readerCloser, err
+	}
+
+	return nil, errors.New("Nothing available to import")
+}
+
+func (c CSV) getWriter() (io.WriteCloser, error) {
+	if c.writer != nil {
+		return c.writer, nil
+	} else if c.filename != "" {
+		writerCloser, err := os.Open(c.filename)
+		return writerCloser, err
+	}
+
+	return nil, errors.New("Nowhere to export")
 }
