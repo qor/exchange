@@ -19,7 +19,7 @@ func New(value interface{}, config ...Config) *CSV {
 		}
 
 		if w, ok := value.(io.WriteCloser); ok {
-			csv = &CSV{writer: w}
+			csv.writer = w
 		}
 	}
 
@@ -44,7 +44,7 @@ type CSV struct {
 	writer   io.WriteCloser
 }
 
-func (c CSV) getReader() (io.ReadCloser, error) {
+func (c *CSV) getReader() (io.ReadCloser, error) {
 	if c.reader != nil {
 		return c.reader, nil
 	} else if c.filename != "" {
@@ -55,7 +55,7 @@ func (c CSV) getReader() (io.ReadCloser, error) {
 	return nil, errors.New("Nothing available to import")
 }
 
-func (c CSV) getWriter() (io.WriteCloser, error) {
+func (c *CSV) getWriter() (io.WriteCloser, error) {
 	if c.writer != nil {
 		return c.writer, nil
 	} else if c.filename != "" {

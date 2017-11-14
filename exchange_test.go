@@ -95,7 +95,8 @@ func TestImportCSVFromReader(t *testing.T) {
 
 	checkProduct(t, "fixtures/products.csv")
 
-	if err := product.Import(csv_adaptor.New("fixtures/products_update.csv"), newContext()); err != nil {
+	updateReader, err := os.Open("fixtures/products_update.csv")
+	if err := product.Import(csv_adaptor.New(updateReader), newContext()); err != nil {
 		t.Fatalf("Failed to import csv, get error %v", err)
 	}
 
