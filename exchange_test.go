@@ -83,6 +83,25 @@ func TestImportCSV(t *testing.T) {
 	checkProduct(t, "fixtures/products_update.csv")
 }
 
+func TestImportCSVFromReader(t *testing.T) {
+	reader, err := os.Open("fixtures/products.csv")
+	if err != nil {
+		t.Errorf("no error should happen when open products.csv")
+	}
+
+	if err := product.Import(csv_adaptor.New(reader), newContext()); err != nil {
+		t.Fatalf("Failed to import csv, get error %v", err)
+	}
+
+	checkProduct(t, "fixtures/products.csv")
+
+	if err := product.Import(csv_adaptor.New("fixtures/products_update.csv"), newContext()); err != nil {
+		t.Fatalf("Failed to import csv, get error %v", err)
+	}
+
+	checkProduct(t, "fixtures/products_update.csv")
+}
+
 func TestExportCSV(t *testing.T) {
 	product.Import(csv_adaptor.New("fixtures/products.csv"), newContext())
 
