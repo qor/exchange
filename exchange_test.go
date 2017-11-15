@@ -109,6 +109,23 @@ func TestExportCSV(t *testing.T) {
 	if err := product.Export(csv_adaptor.New("fixtures/products2.csv"), newContext()); err != nil {
 		t.Fatalf("Failed to export csv, get error %v", err)
 	}
+
+	checkProduct(t, "fixtures/products2.csv")
+}
+
+func TestExportCSVToWriter(t *testing.T) {
+	writerCloser, err := os.OpenFile("fixtures/products_out.csv", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	if err != nil {
+		t.Errorf("Failed to open products out")
+	}
+
+	product.Import(csv_adaptor.New("fixtures/products.csv"), newContext())
+
+	if err := product.Export(csv_adaptor.New(writerCloser), newContext()); err != nil {
+		t.Fatalf("Failed to export csv, get error %v", err)
+	}
+
+	checkProduct(t, "fixtures/products2.csv")
 }
 
 func TestImportWithInvalidData(t *testing.T) {
