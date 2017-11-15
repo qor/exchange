@@ -3,8 +3,6 @@ package csv
 import (
 	"encoding/csv"
 	"fmt"
-	"os"
-	"path/filepath"
 
 	"github.com/qor/exchange"
 	"github.com/qor/qor"
@@ -12,6 +10,7 @@ import (
 	"github.com/qor/roles"
 )
 
+// NewWriter new csv writer
 func (c *CSV) NewWriter(res *exchange.Resource, context *qor.Context) (exchange.Writer, error) {
 	writer := &Writer{CSV: c, Resource: res, context: context}
 
@@ -23,19 +22,16 @@ func (c *CSV) NewWriter(res *exchange.Resource, context *qor.Context) (exchange.
 	}
 	writer.metas = metas
 
-	dir := filepath.Dir(c.Filename)
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		err = os.MkdirAll(dir, os.ModePerm)
-	}
-	csvfile, err := os.OpenFile(c.Filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	csvWriter, err := c.getWriter()
 
 	if err == nil {
-		writer.Writer = csv.NewWriter(csvfile)
+		writer.Writer = csv.NewWriter(csvWriter)
 	}
 
 	return writer, err
 }
 
+// Writer CSV writer struct
 type Writer struct {
 	*CSV
 	context  *qor.Context
@@ -44,6 +40,7 @@ type Writer struct {
 	metas    []*exchange.Meta
 }
 
+// WriteHeader write header
 func (writer *Writer) WriteHeader() error {
 	if !writer.Resource.Config.WithoutHeader {
 		var results []string
@@ -55,6 +52,7 @@ func (writer *Writer) WriteHeader() error {
 	return nil
 }
 
+// WriteRow write row
 func (writer *Writer) WriteRow(record interface{}) (*resource.MetaValues, error) {
 	var metaValues resource.MetaValues
 	var results []string
@@ -73,6 +71,7 @@ func (writer *Writer) WriteRow(record interface{}) (*resource.MetaValues, error)
 	return &metaValues, writer.Writer.Write(results)
 }
 
+// Flush flush all changes
 func (writer *Writer) Flush() {
 	writer.Writer.Flush()
 }

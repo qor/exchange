@@ -83,12 +83,49 @@ func TestImportCSV(t *testing.T) {
 	checkProduct(t, "fixtures/products_update.csv")
 }
 
+func TestImportCSVFromReader(t *testing.T) {
+	reader, err := os.Open("fixtures/products.csv")
+	if err != nil {
+		t.Errorf("no error should happen when open products.csv")
+	}
+
+	if err := product.Import(csv_adaptor.New(reader), newContext()); err != nil {
+		t.Fatalf("Failed to import csv, get error %v", err)
+	}
+
+	checkProduct(t, "fixtures/products.csv")
+
+	updateReader, err := os.Open("fixtures/products_update.csv")
+	if err := product.Import(csv_adaptor.New(updateReader), newContext()); err != nil {
+		t.Fatalf("Failed to import csv, get error %v", err)
+	}
+
+	checkProduct(t, "fixtures/products_update.csv")
+}
+
 func TestExportCSV(t *testing.T) {
 	product.Import(csv_adaptor.New("fixtures/products.csv"), newContext())
 
 	if err := product.Export(csv_adaptor.New("fixtures/products2.csv"), newContext()); err != nil {
 		t.Fatalf("Failed to export csv, get error %v", err)
 	}
+
+	checkProduct(t, "fixtures/products2.csv")
+}
+
+func TestExportCSVToWriter(t *testing.T) {
+	writerCloser, err := os.OpenFile("fixtures/products_out.csv", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	if err != nil {
+		t.Errorf("Failed to open products out")
+	}
+
+	product.Import(csv_adaptor.New("fixtures/products.csv"), newContext())
+
+	if err := product.Export(csv_adaptor.New(writerCloser), newContext()); err != nil {
+		t.Fatalf("Failed to export csv, get error %v", err)
+	}
+
+	checkProduct(t, "fixtures/products2.csv")
 }
 
 func TestImportWithInvalidData(t *testing.T) {

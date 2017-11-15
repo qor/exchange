@@ -2,7 +2,6 @@ package csv
 
 import (
 	"encoding/csv"
-	"os"
 	"strconv"
 	"strings"
 
@@ -11,13 +10,14 @@ import (
 	"github.com/qor/qor/resource"
 )
 
+// NewReader new csv reader
 func (c *CSV) NewReader(res *exchange.Resource, context *qor.Context) (exchange.Rows, error) {
 	var rows = Rows{CSV: c, Resource: res}
 
-	csvfile, err := os.Open(c.Filename)
+	readCloser, err := c.getReader()
 	if err == nil {
-		defer csvfile.Close()
-		reader := csv.NewReader(csvfile)
+		defer readCloser.Close()
+		reader := csv.NewReader(readCloser)
 		reader.TrimLeadingSpace = true
 
 		rows.records, err = reader.ReadAll()
@@ -39,6 +39,7 @@ func (c *CSV) NewReader(res *exchange.Resource, context *qor.Context) (exchange.
 	return &rows, err
 }
 
+// Rows CSV rows struct
 type Rows struct {
 	*CSV
 	Resource *exchange.Resource
@@ -46,6 +47,7 @@ type Rows struct {
 	total    int
 }
 
+// Header CSV header column
 func (rows Rows) Header() (results []string) {
 	if rows.total > 0 {
 		if rows.Resource.Config.WithoutHeader {
@@ -59,18 +61,21 @@ func (rows Rows) Header() (results []string) {
 	return
 }
 
+// Total CSV total rows
 func (rows *Rows) Total() uint {
 	return uint(rows.total)
 }
 
+// Next read next rows from CSV
 func (rows *Rows) Next() bool {
 	if rows.total >= rows.current+1 {
-		rows.current += 1
+		rows.current++
 		return true
 	}
 	return false
 }
 
+// ReadRow read row from CSV
 func (rows Rows) ReadRow() (*resource.MetaValues, error) {
 	var metaValues resource.MetaValues
 	columns := rows.Header()
