@@ -27,11 +27,14 @@ func main() {
   // Define context environment
   context := &qor.Context{DB: db}
 
-  // Import products.csv into database
+  // Import products into database from file `products.csv`
   product.Import(csv.New("products.csv"), context)
 
-  // Export products into products.csv
-  product.Export(csv.New("products.csv"), context)
+  // Import products into database from csv reader
+  product.Import(csv.New(reader), context)
+
+  // Export products to writer
+  product.Export(csv.New(writer), context)
 }
 ```
 
