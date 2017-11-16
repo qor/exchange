@@ -7,8 +7,8 @@ import (
 )
 
 // New new excel backend
-func New(value interface{}, config ...Config) *Excel {
-	excel := &Excel{filename: name}
+func New(value interface{}, config ...*Config) *Excel {
+	excel := &Excel{}
 
 	if f, ok := value.(string); ok {
 		excel.filename = f
@@ -26,12 +26,14 @@ func New(value interface{}, config ...Config) *Excel {
 
 // Config excel config
 type Config struct {
+	TrimSpace bool
 }
 
 // Excel excel struct
 type Excel struct {
 	filename string
 	reader   io.ReadCloser
+	config   *Config
 }
 
 func (excel *Excel) getReader() (io.ReadCloser, error) {
