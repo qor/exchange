@@ -1,4 +1,4 @@
-package exchange_test
+package csv_test
 
 import (
 	"encoding/csv"
@@ -8,24 +8,22 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/jinzhu/gorm"
 	"github.com/qor/exchange"
 	csv_adaptor "github.com/qor/exchange/backends/csv"
+	"github.com/qor/exchange/tests"
 	"github.com/qor/qor"
 	"github.com/qor/qor/resource"
 	"github.com/qor/qor/test/utils"
 )
 
-var db *gorm.DB
+var db = utils.TestDB()
 var product *exchange.Resource
 
 func init() {
-	db = utils.TestDB()
+	db.DropTable(&tests.Product{}, &tests.Category{})
+	db.AutoMigrate(&tests.Product{}, &tests.Category{})
 
-	db.DropTable(&Product{}, &Category{})
-	db.AutoMigrate(&Product{}, &Category{})
-
-	product = exchange.NewResource(&Product{}, exchange.Config{PrimaryField: "Code"})
+	product = exchange.NewResource(&tests.Product{}, exchange.Config{PrimaryField: "Code"})
 	product.Meta(&exchange.Meta{Name: "Code", Header: "代码"})
 	product.Meta(&exchange.Meta{Name: "Name"})
 	product.Meta(&exchange.Meta{Name: "Price"})
@@ -49,17 +47,17 @@ func checkProduct(t *testing.T, filename string) {
 			continue
 		}
 		var count int
-		if db.Model(&Product{}).Where("code = ?", param[0]).Count(&count); count != 1 {
+		if db.Model(&tests.Product{}).Where("code = ?", param[0]).Count(&count); count != 1 {
 			t.Errorf("Found %v with code %v, but should find one (%v)", count, param[0], filename)
 			break
 		}
 
-		if db.Model(&Product{}).Where("code = ? AND name = ? AND price = ?", param[0], param[1], param[2]).Count(&count); count != 1 {
+		if db.Model(&tests.Product{}).Where("code = ? AND name = ? AND price = ?", param[0], param[1], param[2]).Count(&count); count != 1 {
 			t.Errorf("Found %v with params %v, but should find one (%v)", count, param, filename)
 			break
 		}
 
-		var product Product
+		var product tests.Product
 		if len(param) == 4 {
 			db.Preload("Category").Where("code = ? AND name = ? AND price = ?", param[0], param[1], param[2]).First(&product)
 			if product.Category.Name != param[3] {
@@ -129,7 +127,7 @@ func TestExportCSVToWriter(t *testing.T) {
 }
 
 func TestImportWithInvalidData(t *testing.T) {
-	product = exchange.NewResource(&Product{}, exchange.Config{PrimaryField: "Code"})
+	product = exchange.NewResource(&tests.Product{}, exchange.Config{PrimaryField: "Code"})
 	product.Meta(&exchange.Meta{Name: "Code", Header: "代码"})
 	product.Meta(&exchange.Meta{Name: "Name"})
 	product.Meta(&exchange.Meta{Name: "Price"})
@@ -157,14 +155,14 @@ func TestImportWithInvalidData(t *testing.T) {
 }
 
 func TestProcessImportedData(t *testing.T) {
-	product = exchange.NewResource(&Product{}, exchange.Config{PrimaryField: "Code"})
+	product = exchange.NewResource(&tests.Product{}, exchange.Config{PrimaryField: "Code"})
 	product.Meta(&exchange.Meta{Name: "Code", Header: "代码"})
 	product.Meta(&exchange.Meta{Name: "Name"})
 	product.Meta(&exchange.Meta{Name: "Price"})
 
 	product.AddProcessor(&resource.Processor{
 		Handler: func(result interface{}, metaValues *resource.MetaValues, context *qor.Context) error {
-			product := result.(*Product)
+			product := result.(*tests.Product)
 			product.Price = float64(int(product.Price * 1.1)) // Add 10% Tax
 			return nil
 		},
