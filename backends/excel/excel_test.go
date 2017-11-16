@@ -4,13 +4,13 @@ import "testing"
 
 func TestToAxis(t *testing.T) {
 	results := map[string][]int{
-		"A1":  []int{1, 1},
-		"A5":  []int{1, 5},
-		"Z1":  []int{26, 1},
-		"Z10": []int{26, 10},
-		"AA1": []int{27, 1},
-		"AZ9": []int{52, 9},
-		"BA8": []int{53, 8},
+		"A1":  []int{0, 1},
+		"B5":  []int{1, 5},
+		"Z1":  []int{25, 1},
+		"Z10": []int{25, 10},
+		"AA1": []int{26, 1},
+		"AZ9": []int{51, 9},
+		"BA8": []int{52, 8},
 	}
 
 	for key, value := range results {
