@@ -27,6 +27,7 @@ func New(value interface{}, config ...*Config) *Excel {
 // Config excel config
 type Config struct {
 	TrimSpace bool
+	SheetName string
 }
 
 // Excel excel struct

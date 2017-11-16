@@ -19,9 +19,13 @@ func (excel *Excel) NewReader(res *exchange.Resource, context *qor.Context) (exc
 		defer readCloser.Close()
 		var (
 			reader, err = excelize.OpenReader(readCloser)
-			activeSheet = reader.GetActiveSheetIndex()
-			sheetName   = reader.GetSheetName(activeSheet)
+			sheetName   = excel.config.SheetName
 		)
+
+		if sheetName == "" {
+			activeSheet := reader.GetActiveSheetIndex()
+			sheetName = reader.GetSheetName(activeSheet)
+		}
 
 		if err != nil {
 			return nil, err
