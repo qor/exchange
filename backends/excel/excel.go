@@ -16,6 +16,10 @@ func New(value interface{}, config ...*Config) *Excel {
 		if r, ok := value.(io.ReadCloser); ok {
 			excel.reader = r
 		}
+
+		if w, ok := value.(io.WriteCloser); ok {
+			excel.writer = w
+		}
 	}
 
 	for _, cfg := range config {
@@ -34,6 +38,7 @@ type Config struct {
 type Excel struct {
 	filename string
 	reader   io.ReadCloser
+	writer   io.WriteCloser
 	config   *Config
 }
 
