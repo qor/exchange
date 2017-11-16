@@ -28,6 +28,9 @@ func (excel *Excel) NewWriter(res *exchange.Resource, context *qor.Context) (exc
 	writer.Writer = excelWriter
 
 	if excel.config.SheetName != "" {
+		if !excelWriter.GetSheetVisible(excel.config.SheetName) {
+			excelWriter.NewSheet(excel.config.SheetName)
+		}
 	}
 
 	return writer, nil
@@ -36,10 +39,12 @@ func (excel *Excel) NewWriter(res *exchange.Resource, context *qor.Context) (exc
 // Writer CSV writer struct
 type Writer struct {
 	*Excel
-	context  *qor.Context
-	Resource *exchange.Resource
-	Writer   *excelize.File
-	metas    []*exchange.Meta
+	currentRow int
+	sheetName  string
+	context    *qor.Context
+	metas      []*exchange.Meta
+	Resource   *exchange.Resource
+	Writer     *excelize.File
 }
 
 func toAxis(x, y int) string {
@@ -65,12 +70,10 @@ func toAxis(x, y int) string {
 // WriteHeader write header
 func (writer *Writer) WriteHeader() error {
 	if !writer.Resource.Config.WithoutHeader {
-		var results []string
-		for _, meta := range writer.metas {
-			results = append(results, meta.Header)
+		writer.currentRow++
+		for key, meta := range writer.metas {
+			writer.Writer.SetCellValue(writer.sheetName, toAxis(writer.currentRow, key+1), meta.Header)
 		}
-		// writer.Writer.SetCellValue()
-		// writer.Writer.Write(results)
 	}
 	return nil
 }
@@ -78,9 +81,9 @@ func (writer *Writer) WriteHeader() error {
 // WriteRow write row
 func (writer *Writer) WriteRow(record interface{}) (*resource.MetaValues, error) {
 	var metaValues resource.MetaValues
-	var results []string
+	writer.currentRow++
 
-	for _, meta := range writer.metas {
+	for key, meta := range writer.metas {
 		value := meta.GetFormattedValuer()(record, writer.context)
 		metaValue := resource.MetaValue{
 			Name:  meta.GetName(),
@@ -88,14 +91,13 @@ func (writer *Writer) WriteRow(record interface{}) (*resource.MetaValues, error)
 		}
 
 		metaValues.Values = append(metaValues.Values, &metaValue)
-		results = append(results, fmt.Sprint(value))
+		writer.Writer.SetCellValue(writer.sheetName, toAxis(writer.currentRow, key+1), fmt.Sprint(value))
 	}
 
-	return &metaValues, nil //writer.Writer.Write(results)
+	return &metaValues, nil
 }
 
 // Flush flush all changes
 func (writer *Writer) Flush() {
-	// FIXME write to writer
-	writer.Writer.Write(writer.writer)
+	writer.Writer.Write(writer.Writer)
 }
