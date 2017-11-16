@@ -2,6 +2,7 @@ package excel
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/qor/exchange"
@@ -41,6 +42,26 @@ type Writer struct {
 	metas    []*exchange.Meta
 }
 
+func toAxis(x, y int) string {
+	var (
+		xKey    = []string{}
+		xValues = []string{
+			"A", "B", "C", "D", "E", "F", "G",
+			"H", "I", "J", "K", "L", "M", "N",
+			"O", "P", "Q", "R", "S", "T", "U",
+			"V", "W", "X", "Y", "Z",
+		}
+	)
+
+	for x >= 1 {
+		remainder := (x - 1) % 26
+		xKey = append([]string{xValues[remainder]}, xKey...)
+		x = (x - 1) / 26
+	}
+
+	return fmt.Sprintf("%v%v", strings.Join(xKey, ""), y)
+}
+
 // WriteHeader write header
 func (writer *Writer) WriteHeader() error {
 	if !writer.Resource.Config.WithoutHeader {
@@ -48,9 +69,8 @@ func (writer *Writer) WriteHeader() error {
 		for _, meta := range writer.metas {
 			results = append(results, meta.Header)
 		}
-		writer.Writer.InsertRow()
-		writer.Writer.SetCellValue()
-		writer.Writer.Write(results)
+		// writer.Writer.SetCellValue()
+		// writer.Writer.Write(results)
 	}
 	return nil
 }
@@ -71,7 +91,7 @@ func (writer *Writer) WriteRow(record interface{}) (*resource.MetaValues, error)
 		results = append(results, fmt.Sprint(value))
 	}
 
-	return &metaValues, writer.Writer.Write(results)
+	return &metaValues, nil //writer.Writer.Write(results)
 }
 
 // Flush flush all changes
