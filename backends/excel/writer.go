@@ -21,19 +21,24 @@ func (excel *Excel) NewWriter(res *exchange.Resource, context *qor.Context) (exc
 			metas = append(metas, meta)
 		}
 	}
+
 	writer.metas = metas
 
-	excelWriter := excelize.NewFile()
+	excelWriter, err := excel.getWriter()
 
-	writer.Writer = excelWriter
+	if err == nil {
+		if excel.config.SheetName == "" {
+			excel.config.SheetName = "Export Results"
+		}
 
-	if excel.config.SheetName != "" {
 		if !excelWriter.GetSheetVisible(excel.config.SheetName) {
 			excelWriter.NewSheet(excel.config.SheetName)
 		}
+
+		writer.Writer = excelWriter
 	}
 
-	return writer, nil
+	return writer, err
 }
 
 // Writer CSV writer struct
@@ -99,5 +104,6 @@ func (writer *Writer) WriteRow(record interface{}) (*resource.MetaValues, error)
 
 // Flush flush all changes
 func (writer *Writer) Flush() {
-	writer.Writer.Write(writer.Writer)
+	defer writer.Excel.writer.Close()
+	writer.Writer.Write(writer.Excel.writer)
 }

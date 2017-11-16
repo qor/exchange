@@ -4,6 +4,8 @@ import (
 	"errors"
 	"io"
 	"os"
+
+	"github.com/360EntSecGroup-Skylar/excelize"
 )
 
 // New new excel backend
@@ -51,4 +53,16 @@ func (excel *Excel) getReader() (io.ReadCloser, error) {
 	}
 
 	return nil, errors.New("Nothing available to import")
+}
+
+func (excel *Excel) getWriter() (*excelize.File, error) {
+	if excel.filename != "" {
+		return excelize.OpenFile(excel.filename)
+	}
+
+	if excel.writer != nil {
+		return excelize.NewFile(), nil
+	}
+
+	return nil, errors.New("Nowhere to export")
 }
