@@ -59,8 +59,10 @@ func toAxis(x, y int) string {
 func (writer *Writer) WriteHeader() error {
 	if !writer.Resource.Config.WithoutHeader {
 		writer.currentRow++
+		writer.Writer.InsertRow(writer.sheetName, writer.currentRow)
 		for key, meta := range writer.metas {
-			writer.Writer.SetCellValue(writer.sheetName, toAxis(writer.currentRow, key), meta.Header)
+			writer.Writer.InsertCol(writer.sheetName, excelize.ToAlphaString(key))
+			writer.Writer.SetCellValue(writer.sheetName, toAxis(key, writer.currentRow), meta.Header)
 		}
 	}
 	return nil
@@ -79,7 +81,7 @@ func (writer *Writer) WriteRow(record interface{}) (*resource.MetaValues, error)
 		}
 
 		metaValues.Values = append(metaValues.Values, &metaValue)
-		writer.Writer.SetCellValue(writer.sheetName, toAxis(writer.currentRow, key), fmt.Sprint(value))
+		writer.Writer.SetCellValue(writer.sheetName, toAxis(key, writer.currentRow), fmt.Sprint(value))
 	}
 
 	return &metaValues, nil
@@ -87,6 +89,12 @@ func (writer *Writer) WriteRow(record interface{}) (*resource.MetaValues, error)
 
 // Flush flush all changes
 func (writer *Writer) Flush() {
-	defer writer.Excel.writer.Close()
-	writer.Writer.Write(writer.Excel.writer)
+	if writer.Excel.writer != nil {
+		defer writer.Excel.writer.Close()
+		writer.Writer.Write(writer.Excel.writer)
+	}
+
+	if writer.Excel.filename != "" {
+		writer.Writer.SaveAs(writer.Excel.filename)
+	}
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/360EntSecGroup-Skylar/excelize"
 )
@@ -27,6 +28,11 @@ func New(value interface{}, config ...*Config) *Excel {
 	for _, cfg := range config {
 		excel.config = cfg
 	}
+
+	if excel.config == nil {
+		excel.config = &Config{}
+	}
+
 	return excel
 }
 
@@ -57,7 +63,16 @@ func (excel *Excel) getReader() (io.ReadCloser, error) {
 
 func (excel *Excel) getWriter() (*excelize.File, error) {
 	if excel.filename != "" {
-		return excelize.OpenFile(excel.filename)
+		dir := filepath.Dir(excel.filename)
+		if _, err := os.Stat(dir); os.IsNotExist(err) {
+			err = os.MkdirAll(dir, os.ModePerm)
+		}
+
+		f, err := excelize.OpenFile(excel.filename)
+		if os.IsNotExist(err) {
+			return excelize.NewFile(), nil
+		}
+		return f, err
 	}
 
 	if excel.writer != nil {

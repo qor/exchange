@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/qor/exchange"
-	csv_adaptor "github.com/qor/exchange/backends/csv"
+	"github.com/qor/exchange/backends/excel"
 	"github.com/qor/exchange/tests"
 	"github.com/qor/qor"
 	"github.com/qor/qor/resource"
@@ -67,59 +67,59 @@ func checkProduct(t *testing.T, filename string) {
 	}
 }
 
-func TestImportCSV(t *testing.T) {
-	if err := product.Import(csv_adaptor.New("fixtures/products.xlsx"), newContext()); err != nil {
+func TestImportExcel(t *testing.T) {
+	if err := product.Import(excel.New("fixtures/products.xlsx"), newContext()); err != nil {
 		t.Fatalf("Failed to import excel, get error %v", err)
 	}
 
 	checkProduct(t, "fixtures/products.csv")
 
-	if err := product.Import(csv_adaptor.New("fixtures/products_update.xlsx"), newContext()); err != nil {
+	if err := product.Import(excel.New("fixtures/products_update.xlsx"), newContext()); err != nil {
 		t.Fatalf("Failed to import excel, get error %v", err)
 	}
 
 	checkProduct(t, "fixtures/products_update.csv")
 }
 
-func TestImportCSVFromReader(t *testing.T) {
+func TestImportExcelFromReader(t *testing.T) {
 	reader, err := os.Open("fixtures/products.xlsx")
 	if err != nil {
 		t.Errorf("no error should happen when open products.csv")
 	}
 
-	if err := product.Import(csv_adaptor.New(reader), newContext()); err != nil {
+	if err := product.Import(excel.New(reader), newContext()); err != nil {
 		t.Fatalf("Failed to import excel, get error %v", err)
 	}
 
 	checkProduct(t, "fixtures/products.csv")
 
 	updateReader, err := os.Open("fixtures/products_update.xlsx")
-	if err := product.Import(csv_adaptor.New(updateReader), newContext()); err != nil {
+	if err := product.Import(excel.New(updateReader), newContext()); err != nil {
 		t.Fatalf("Failed to import excel, get error %v", err)
 	}
 
 	checkProduct(t, "fixtures/products_update.csv")
 }
 
-func TestExportCSV(t *testing.T) {
-	product.Import(csv_adaptor.New("fixtures/products.xlsx"), newContext())
+func TestExportExcel(t *testing.T) {
+	product.Import(excel.New("fixtures/products.xlsx"), newContext())
 
-	if err := product.Export(csv_adaptor.New("fixtures/products2.csv"), newContext()); err != nil {
+	if err := product.Export(excel.New("fixtures/products2.xlsx"), newContext()); err != nil {
 		t.Fatalf("Failed to export excel, get error %v", err)
 	}
 
-	checkProduct(t, "fixtures/products2.csv")
+	checkProduct(t, "fixtures/products2.xlsx")
 }
 
-func TestExportCSVToWriter(t *testing.T) {
+func TestExportExcelToWriter(t *testing.T) {
 	writerCloser, err := os.OpenFile("fixtures/products_out.csv", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		t.Errorf("Failed to open products out")
 	}
 
-	product.Import(csv_adaptor.New("fixtures/products.xlsx"), newContext())
+	product.Import(excel.New("fixtures/products.xlsx"), newContext())
 
-	if err := product.Export(csv_adaptor.New(writerCloser), newContext()); err != nil {
+	if err := product.Export(excel.New(writerCloser), newContext()); err != nil {
 		t.Fatalf("Failed to export excel, get error %v", err)
 	}
 
@@ -145,11 +145,11 @@ func TestImportWithInvalidData(t *testing.T) {
 		},
 	})
 
-	if err := product.Import(csv_adaptor.New("fixtures/products.xlsx"), newContext()); err != nil {
+	if err := product.Import(excel.New("fixtures/products.xlsx"), newContext()); err != nil {
 		t.Errorf("Failed to import product, get error: %v", err)
 	}
 
-	if err := product.Import(csv_adaptor.New("fixtures/invalid_price_products.xlsx"), newContext()); err == nil {
+	if err := product.Import(excel.New("fixtures/invalid_price_products.xlsx"), newContext()); err == nil {
 		t.Error("should get error when import products with invalid price")
 	}
 }
@@ -168,7 +168,7 @@ func TestProcessImportedData(t *testing.T) {
 		},
 	})
 
-	if err := product.Import(csv_adaptor.New("fixtures/products.xlsx"), newContext()); err != nil {
+	if err := product.Import(excel.New("fixtures/products.xlsx"), newContext()); err != nil {
 		t.Errorf("Failed to import product, get error: %v", err)
 	}
 
