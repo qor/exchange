@@ -1,13 +1,13 @@
 package excel_test
 
 import (
-	"encoding/csv"
 	"errors"
 	"fmt"
 	"os"
 	"strconv"
 	"testing"
 
+	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/qor/exchange"
 	"github.com/qor/exchange/backends/excel"
 	"github.com/qor/exchange/tests"
@@ -36,11 +36,12 @@ func newContext() *qor.Context {
 }
 
 func checkProduct(t *testing.T, filename string) {
-	csvfile, _ := os.Open(filename)
-	defer csvfile.Close()
-	reader := csv.NewReader(csvfile)
-	reader.TrimLeadingSpace = true
-	params, _ := reader.ReadAll()
+	excelFile, _ := excelize.OpenFile(filename)
+	activeSheetIndex := excelFile.GetActiveSheetIndex()
+	if activeSheetIndex == 0 && excelFile.SheetCount > 0 {
+		activeSheetIndex = 1
+	}
+	params := excelFile.GetRows(excelFile.GetSheetName(activeSheetIndex))
 
 	for index, param := range params {
 		if index == 0 {
@@ -72,33 +73,33 @@ func TestImportExcel(t *testing.T) {
 		t.Fatalf("Failed to import excel, get error %v", err)
 	}
 
-	checkProduct(t, "fixtures/products.csv")
+	checkProduct(t, "fixtures/products.xlsx")
 
 	if err := product.Import(excel.New("fixtures/products_update.xlsx"), newContext()); err != nil {
 		t.Fatalf("Failed to import excel, get error %v", err)
 	}
 
-	checkProduct(t, "fixtures/products_update.csv")
+	checkProduct(t, "fixtures/products_update.xlsx")
 }
 
 func TestImportExcelFromReader(t *testing.T) {
 	reader, err := os.Open("fixtures/products.xlsx")
 	if err != nil {
-		t.Errorf("no error should happen when open products.csv")
+		t.Errorf("no error should happen when open products.xlsx")
 	}
 
 	if err := product.Import(excel.New(reader), newContext()); err != nil {
 		t.Fatalf("Failed to import excel, get error %v", err)
 	}
 
-	checkProduct(t, "fixtures/products.csv")
+	checkProduct(t, "fixtures/products.xlsx")
 
 	updateReader, err := os.Open("fixtures/products_update.xlsx")
 	if err := product.Import(excel.New(updateReader), newContext()); err != nil {
 		t.Fatalf("Failed to import excel, get error %v", err)
 	}
 
-	checkProduct(t, "fixtures/products_update.csv")
+	checkProduct(t, "fixtures/products_update.xlsx")
 }
 
 func TestExportExcel(t *testing.T) {
@@ -112,7 +113,7 @@ func TestExportExcel(t *testing.T) {
 }
 
 func TestExportExcelToWriter(t *testing.T) {
-	writerCloser, err := os.OpenFile("fixtures/products_out.csv", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	writerCloser, err := os.OpenFile("fixtures/products_out.xlsx", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		t.Errorf("Failed to open products out")
 	}
@@ -123,7 +124,7 @@ func TestExportExcelToWriter(t *testing.T) {
 		t.Fatalf("Failed to export excel, get error %v", err)
 	}
 
-	checkProduct(t, "fixtures/products2.csv")
+	checkProduct(t, "fixtures/products2.xlsx")
 }
 
 func TestImportWithInvalidData(t *testing.T) {
@@ -172,5 +173,5 @@ func TestProcessImportedData(t *testing.T) {
 		t.Errorf("Failed to import product, get error: %v", err)
 	}
 
-	checkProduct(t, "fixtures/products_with_tax.csv")
+	checkProduct(t, "fixtures/products_with_tax.xlsx")
 }
