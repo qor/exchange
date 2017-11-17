@@ -23,5 +23,5 @@ type Rows interface {
 type Writer interface {
 	WriteHeader() error
 	WriteRow(interface{}) (*resource.MetaValues, error)
-	Flush()
+	Flush() error
 }

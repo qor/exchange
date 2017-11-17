@@ -1,4 +1,4 @@
-package exchange_test
+package tests
 
 import "github.com/jinzhu/gorm"
 
