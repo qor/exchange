@@ -72,6 +72,7 @@ func (writer *Writer) WriteRow(record interface{}) (*resource.MetaValues, error)
 }
 
 // Flush flush all changes
-func (writer *Writer) Flush() {
+func (writer *Writer) Flush() error {
 	writer.Writer.Flush()
+	return nil
 }

@@ -43,6 +43,10 @@ func checkProduct(t *testing.T, filename string) {
 	}
 	params := excelFile.GetRows(excelFile.GetSheetName(activeSheetIndex))
 
+	if len(params) == 0 {
+		t.Errorf("No products found in the templates")
+	}
+
 	for index, param := range params {
 		if index == 0 {
 			continue

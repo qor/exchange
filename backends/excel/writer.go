@@ -12,7 +12,7 @@ import (
 
 // NewWriter new csv writer
 func (excel *Excel) NewWriter(res *exchange.Resource, context *qor.Context) (exchange.Writer, error) {
-	writer := &Writer{Excel: excel, Resource: res, context: context}
+	writer := &Writer{Excel: excel, Resource: res, context: context, sheetName: excel.config.SheetName}
 
 	var metas []*exchange.Meta
 	for _, meta := range res.Metas {
@@ -26,12 +26,13 @@ func (excel *Excel) NewWriter(res *exchange.Resource, context *qor.Context) (exc
 	excelWriter, err := excel.getWriter()
 
 	if err == nil {
-		if excel.config.SheetName == "" {
-			excel.config.SheetName = "Export Results"
+		if writer.sheetName == "" {
+			writer.sheetName = "Sheet1"
 		}
 
-		if !excelWriter.GetSheetVisible(excel.config.SheetName) {
-			excelWriter.NewSheet(excel.config.SheetName)
+		if !excelWriter.GetSheetVisible(writer.sheetName) {
+			idx := excelWriter.NewSheet(writer.sheetName)
+			excelWriter.SetActiveSheet(idx)
 		}
 
 		writer.Writer = excelWriter
@@ -59,9 +60,7 @@ func toAxis(x, y int) string {
 func (writer *Writer) WriteHeader() error {
 	if !writer.Resource.Config.WithoutHeader {
 		writer.currentRow++
-		writer.Writer.InsertRow(writer.sheetName, writer.currentRow)
 		for key, meta := range writer.metas {
-			writer.Writer.InsertCol(writer.sheetName, excelize.ToAlphaString(key))
 			writer.Writer.SetCellValue(writer.sheetName, toAxis(key, writer.currentRow), meta.Header)
 		}
 	}
@@ -81,20 +80,18 @@ func (writer *Writer) WriteRow(record interface{}) (*resource.MetaValues, error)
 		}
 
 		metaValues.Values = append(metaValues.Values, &metaValue)
-		writer.Writer.SetCellValue(writer.sheetName, toAxis(key, writer.currentRow), fmt.Sprint(value))
+		writer.Writer.SetCellValue(writer.sheetName, toAxis(key, writer.currentRow), value)
 	}
 
 	return &metaValues, nil
 }
 
 // Flush flush all changes
-func (writer *Writer) Flush() {
+func (writer *Writer) Flush() error {
 	if writer.Excel.writer != nil {
 		defer writer.Excel.writer.Close()
-		writer.Writer.Write(writer.Excel.writer)
+		return writer.Writer.Write(writer.Excel.writer)
 	}
 
-	if writer.Excel.filename != "" {
-		writer.Writer.SaveAs(writer.Excel.filename)
-	}
+	return writer.Writer.SaveAs(writer.Excel.filename)
 }

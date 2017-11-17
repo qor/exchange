@@ -176,13 +176,18 @@ func (res *Resource) Import(container Container, context *qor.Context, callbacks
 // Export used export data from a exchange Resource
 //     product.Export(csv.New("products.csv"), context)
 func (res *Resource) Export(container Container, context *qor.Context, callbacks ...func(Progress) error) error {
-	results := res.NewSlice()
+	var (
+		total   uint
+		results = res.NewSlice()
+		err     = context.GetDB().Find(results).Count(&total).Error
+	)
 
-	var total uint
-	if err := context.GetDB().Find(results).Count(&total).Error; err == nil {
+	if err == nil {
 		reflectValue := reflect.Indirect(reflect.ValueOf(results))
 
-		if writer, err := container.NewWriter(res, context); err == nil {
+		writer, err := container.NewWriter(res, context)
+
+		if err == nil {
 			writer.WriteHeader()
 
 			for i := 0; i < reflectValue.Len(); i++ {
@@ -211,12 +216,11 @@ func (res *Resource) Export(container Container, context *qor.Context, callbacks
 					}
 				}
 			}
-			writer.Flush()
-		} else {
-			return err
+			err = writer.Flush()
 		}
-	} else {
+
 		return err
 	}
-	return nil
+
+	return err
 }
