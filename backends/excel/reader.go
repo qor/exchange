@@ -1,7 +1,6 @@
 package excel
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -36,13 +35,10 @@ func (excel *Excel) NewReader(res *exchange.Resource, context *qor.Context) (exc
 		}
 
 		rows.records = reader.GetRows(sheetName)
-		fmt.Println(rows.records)
 
-		if excel.config.TrimSpace {
-			for i, r := range rows.records {
-				for j, v := range r {
-					rows.records[i][j] = strings.TrimSpace(v)
-				}
+		for i, r := range rows.records {
+			for j, v := range r {
+				rows.records[i][j] = strings.TrimSpace(v)
 			}
 		}
 
