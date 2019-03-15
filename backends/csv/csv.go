@@ -48,6 +48,10 @@ func (c *CSV) getReader() (io.ReadCloser, error) {
 	if c.reader != nil {
 		return c.reader, nil
 	} else if c.filename != "" {
+		if isXLSXFile(c.filename) {
+			return generateCSVFromXLSXFile(c.filename)
+		}
+
 		readerCloser, err := os.Open(c.filename)
 		return readerCloser, err
 	}
