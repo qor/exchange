@@ -68,11 +68,9 @@ func (excel *Excel) getWriter() (*excelize.File, error) {
 			err = os.MkdirAll(dir, os.ModePerm)
 		}
 
-		f, err := excelize.OpenFile(excel.filename)
-		if os.IsNotExist(err) {
-			return excelize.NewFile(), nil
-		}
-		return f, err
+		f := excelize.NewFile()
+
+		return f, nil
 	}
 
 	if excel.writer != nil {
