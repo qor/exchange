@@ -1,8 +1,6 @@
 package excel
 
 import (
-	"fmt"
-
 	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/qor/exchange"
 	"github.com/qor/qor"
@@ -53,7 +51,19 @@ type Writer struct {
 }
 
 func toAxis(x, y int) string {
-	return fmt.Sprintf("%v%v", excelize.ToAlphaString(x), y)
+	col, err := excelize.ColumnNumberToName(x + 1)
+	// must not have any err
+	if err != nil {
+		panic(err)
+	}
+
+	// must not have any err
+	ax, err := excelize.JoinCellName(col, y)
+	if err != nil {
+		panic(err)
+	}
+
+	return ax
 }
 
 // WriteHeader write header
