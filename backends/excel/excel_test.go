@@ -41,7 +41,10 @@ func checkProduct(t *testing.T, filename string) {
 	if activeSheetIndex == 0 && excelFile.SheetCount > 0 {
 		activeSheetIndex = 1
 	}
-	params := excelFile.GetRows(excelFile.GetSheetName(activeSheetIndex))
+	params, err := excelFile.GetRows(excelFile.GetSheetName(activeSheetIndex))
+	if err != nil {
+		t.Errorf("Failed to call the GetRows method, get error %v", err)
+	}
 
 	if len(params) == 0 {
 		t.Errorf("No products found in the templates")

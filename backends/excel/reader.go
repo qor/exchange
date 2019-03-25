@@ -34,7 +34,10 @@ func (excel *Excel) NewReader(res *exchange.Resource, context *qor.Context) (exc
 			return nil, err
 		}
 
-		rows.records = reader.GetRows(sheetName)
+		rows.records, err = reader.GetRows(sheetName)
+		if err != nil {
+			return nil, err
+		}
 
 		for i, r := range rows.records {
 			for j, v := range r {
