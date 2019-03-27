@@ -24,15 +24,24 @@ func generateCSVFromXLSXFile(fileName string) (io.ReadCloser, error) {
 	var buf bytes.Buffer
 	csvWriter := stdcsv.NewWriter(&buf)
 
+	var firstRowSize int
 	for _, row := range sheet.Rows {
 		if row.Hidden {
 			continue
 		}
+		if len(row.Cells) == 0 {
+			continue
+		}
 
-		var record = make([]string, len(row.Cells))
+		if firstRowSize == 0 {
+			firstRowSize = len(row.Cells)
+		}
+
+		var record = make([]string, firstRowSize)
 		for i, cell := range row.Cells {
 			record[i] = cell.Value
 		}
+
 		err = csvWriter.Write(record)
 		if err != nil {
 			return nil, err
