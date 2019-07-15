@@ -152,8 +152,13 @@ func (res *Resource) Import(container Container, context *qor.Context, callbacks
 
 				if err = res.FindOneHandler(result, metaValues, context); err == nil || err == gorm.ErrRecordNotFound {
 					if err = resource.DecodeToResource(res, result, metaValues, context).Start(); err == nil {
-						if err = res.CallSave(result, context); err != nil {
-							handleError(err)
+						hasErr := context.HasError()
+						if !hasErr {
+							if err = res.CallSave(result, context); err != nil {
+								handleError(err)
+							}
+						} else {
+							handleError(context.Errors)
 						}
 					} else {
 						handleError(err)
