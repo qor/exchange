@@ -125,8 +125,9 @@ func (res *Resource) Import(container Container, context *qor.Context, callbacks
 					if errors, ok := err.(errorsInterface); ok {
 						for _, err := range errors.GetErrors() {
 							handleError(err)
-
 						}
+						//Avoid repeated handle errors , clear context.Errors
+						context.Errors = qor.Errors{}
 					} else if errValidations, ok := err.(*validations.Error); ok {
 						for idx, cell := range progress.Cells {
 							if cell.Header == errValidations.Column {
