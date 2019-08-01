@@ -125,18 +125,19 @@ func (res *Resource) Import(container Container, context *qor.Context, callbacks
 					if errors, ok := err.(errorsInterface); ok {
 						for _, err := range errors.GetErrors() {
 							handleError(err)
+
 						}
-					} else if err, ok := err.(*validations.Error); ok {
+					} else if errValidations, ok := err.(*validations.Error); ok {
 						for idx, cell := range progress.Cells {
-							if cell.Header == err.Column {
-								cell.Error = err
+							if cell.Header == errValidations.Column {
+								cell.Error = errValidations
 								progress.Cells[idx] = cell
 								break
 							}
 						}
 					} else if len(progress.Cells) > 0 {
 						var err error = err
-						cell := progress.Cells[0]
+						cell := &progress.Cells[0]
 						if cell.Error != nil {
 							var errors qor.Errors
 							errors.AddError(cell.Error)
