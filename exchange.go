@@ -161,6 +161,7 @@ func (res *Resource) Import(container Container, context *qor.Context, callbacks
 							}
 						} else {
 							handleError(context.Errors)
+							clearContextErrorsForCurrentRow(context)
 						}
 					} else {
 						handleError(err)
@@ -178,6 +179,9 @@ func (res *Resource) Import(container Container, context *qor.Context, callbacks
 		}
 	}
 	return err
+}
+func clearContextErrorsForCurrentRow(context *qor.Context) {
+	context.Errors = qor.Errors{}
 }
 
 // Export used export data from a exchange Resource
