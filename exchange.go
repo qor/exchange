@@ -125,7 +125,6 @@ func (res *Resource) Import(container Container, context *qor.Context, callbacks
 					if errors, ok := err.(errorsInterface); ok {
 						for _, err := range errors.GetErrors() {
 							handleError(err)
-
 						}
 					} else if errValidations, ok := err.(*validations.Error); ok {
 						for idx, cell := range progress.Cells {
@@ -160,6 +159,7 @@ func (res *Resource) Import(container Container, context *qor.Context, callbacks
 							}
 						} else {
 							handleError(context.Errors)
+							clearContextErrorsForCurrentRow(context)
 						}
 					} else {
 						handleError(err)
@@ -177,6 +177,9 @@ func (res *Resource) Import(container Container, context *qor.Context, callbacks
 		}
 	}
 	return err
+}
+func clearContextErrorsForCurrentRow(context *qor.Context) {
+	context.Errors = qor.Errors{}
 }
 
 // Export used export data from a exchange Resource
