@@ -25,7 +25,7 @@ func generateCSVFromXLSXFile(fileName string) (io.ReadCloser, error) {
 	csvWriter := stdcsv.NewWriter(&buf)
 
 	var firstRowSize int
-	sheet.ForEachRow(func(row *xlsx.Row) error {
+	err = sheet.ForEachRow(func(row *xlsx.Row) error {
 		if row.Hidden {
 			return nil
 		}
@@ -54,6 +54,10 @@ func generateCSVFromXLSXFile(fileName string) (io.ReadCloser, error) {
 		}
 		return nil
 	})
+
+	if err != nil {
+		return nil, err
+	}
 
 	csvWriter.Flush()
 	err = csvWriter.Error()
