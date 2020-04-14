@@ -4,6 +4,7 @@ import (
 	"bytes"
 	stdcsv "encoding/csv"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"path/filepath"
@@ -45,7 +46,7 @@ func generateCSVFromXLSXFile(fileName string) (io.ReadCloser, error) {
 		}
 
 		if firstRowSize != len(record) {
-			return errors.New("This XLSX file data is invalid")
+			return errors.New(fmt.Sprintf("This XLSX file data is invalid,Header length:%d,This row length:%d,This row data:%s", firstRowSize, len(record), record))
 		}
 
 		err = csvWriter.Write(record)
