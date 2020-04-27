@@ -25,28 +25,40 @@ func generateCSVFromXLSXFile(fileName string) (io.ReadCloser, error) {
 	csvWriter := stdcsv.NewWriter(&buf)
 
 	var firstRowSize int
-	for _, row := range sheet.Rows {
+	err = sheet.ForEachRow(func(row *xlsx.Row) error {
 		if row.Hidden {
-			continue
+			return nil
 		}
-		if len(row.Cells) == 0 {
-			continue
+
+		var record []string
+		row.ForEachCell(func(cell *xlsx.Cell) error {
+			record = append(record, cell.Value)
+			return nil
+		})
+
+		if len(record) == 0 {
+			return nil
 		}
 
 		if firstRowSize == 0 {
-			firstRowSize = len(row.Cells)
+			firstRowSize = len(record)
 		}
 
-		var record = make([]string, firstRowSize)
-		for i, cell := range row.Cells {
-			record[i] = cell.Value
+		if firstRowSize != len(record) {
+			return errors.New("This XLSX file data is invalid")
 		}
 
 		err = csvWriter.Write(record)
 		if err != nil {
-			return nil, err
+			return err
 		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
+
 	csvWriter.Flush()
 	err = csvWriter.Error()
 	if err != nil {
