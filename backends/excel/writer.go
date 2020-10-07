@@ -1,7 +1,7 @@
 package excel
 
 import (
-	"github.com/360EntSecGroup-Skylar/excelize"
+	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"github.com/qor/exchange"
 	"github.com/qor/qor"
 	"github.com/qor/qor/resource"
