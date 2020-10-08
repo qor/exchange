@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/360EntSecGroup-Skylar/excelize"
+	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"github.com/qor/exchange"
 	"github.com/qor/exchange/backends/excel"
 	"github.com/qor/exchange/tests"
@@ -76,7 +76,7 @@ func checkProduct(t *testing.T, filename string) {
 }
 
 func TestImportExcel(t *testing.T) {
-	if err := product.Import(excel.New("fixtures/products.xlsx"), newContext()); err != nil {
+	if err := product.Import(excel.New("./fixtures/products.xlsx"), newContext()); err != nil {
 		t.Fatalf("Failed to import excel, get error %v", err)
 	}
 
