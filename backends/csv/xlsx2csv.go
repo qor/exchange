@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
-	"github.com/tealeg/xlsx"
+	"github.com/tealeg/xlsx/v3"
 )
 
 func generateCSVFromXLSXFile(fileName string) (io.ReadCloser, error) {
